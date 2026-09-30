@@ -1,5 +1,5 @@
-// Archer Duel service worker: always fetch the newest game when online, fall back to the saved copy offline.
-const C = 'archer-duel-v1';
+﻿// Archer Duel service worker: always fetch the newest game when online, fall back to the saved copy offline.
+const C = 'archer-duel-v2';
 const FILES = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png'];
 self.addEventListener('install', (e) => { self.skipWaiting(); e.waitUntil(caches.open(C).then((c) => c.addAll(FILES)).catch(() => {})); });
 self.addEventListener('activate', (e) => {

@@ -42,7 +42,8 @@ body{
   touch-action:none;-webkit-user-select:none;user-select:none;
 }
 #screen{position:relative;overflow:hidden;container-type:size;background:#000;
-  box-shadow:0 0 0 2px #5a4a36, 0 0 0 9px #1a1511, 0 0 0 10px #6b5a42, 0 40px 90px rgba(0,0,0,.85)}
+  /* menus keep the size they had in a 16:9 box, even though the game now fills the whole screen */
+  --u:min(1cqw, calc(1cqh * 16 / 9))}
 canvas{display:block;width:100%;height:100%;cursor:crosshair}
 .fx{position:absolute;inset:0;pointer-events:none}
 .grain{opacity:.13;mix-blend-mode:overlay;animation:grain .5s steps(5) infinite}
@@ -53,61 +54,71 @@ canvas{display:block;width:100%;height:100%;cursor:crosshair}
 .panel{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(8,5,3,.62)}
 .panel[hidden]{display:none}
 .parch{
-  position:relative;width:min(70cqw, 1000px);max-height:94cqh;overflow:auto;padding:2.4cqh 3.4cqw 2.8cqh;text-align:center;color:var(--ink);
+  position:relative;width:min(calc(70 * var(--u)), 1000px);max-height:94cqh;overflow:auto;padding:2.4cqh calc(3.4 * var(--u)) 2.8cqh;text-align:center;color:var(--ink);
   background:
     radial-gradient(ellipse at 30% 20%, rgba(255,250,235,.55), transparent 60%),
     radial-gradient(ellipse at 80% 90%, rgba(120,80,40,.35), transparent 55%),
     linear-gradient(var(--parch), var(--parch2));
-  box-shadow:0 0 0 .25cqw #5a4128, inset 0 0 4cqw rgba(90,55,20,.55), 0 2cqw 5cqw rgba(0,0,0,.7);
+  box-shadow:0 0 0 calc(.25 * var(--u)) #5a4128, inset 0 0 calc(4 * var(--u)) rgba(90,55,20,.55), 0 calc(2 * var(--u)) calc(5 * var(--u)) rgba(0,0,0,.7);
   display:flex;flex-direction:column;align-items:center;gap:1.1cqh;scrollbar-width:thin;
 }
-.title{font-family:'UnifrakturMaguntia', 'Old English Text MT', serif;font-weight:400;font-size:6cqw;line-height:1;margin:0;color:var(--blood)}
-.sub{font-family:'IM Fell English SC', Georgia, serif;font-size:1.8cqw;margin:-.6cqh 0 0;letter-spacing:.06em}
-.decree{font-style:italic;font-size:1.4cqw;line-height:1.4;margin:0;max-width:54cqw}
-.opts{display:grid;grid-template-columns:auto 1fr;gap:.9cqh 1.2cqw;align-items:center;margin:.6cqh 0}
-.lbl{font-family:'IM Fell English SC', Georgia, serif;font-size:1.45cqw;text-align:right}
-.seg{display:flex;border:.15cqw solid #4a3220;justify-self:start}
-.seg button{font:1.35cqw 'IM Fell English', Georgia, serif;padding:.45cqw 1.1cqw;border:0;background:transparent;color:var(--ink);cursor:pointer;min-width:3cqw}
-.seg button+button{border-left:.15cqw solid #4a3220}
+.title{font-family:'UnifrakturMaguntia', 'Old English Text MT', serif;font-weight:400;font-size:calc(6 * var(--u));line-height:1;margin:0;color:var(--blood)}
+.sub{font-family:'IM Fell English SC', Georgia, serif;font-size:calc(1.8 * var(--u));margin:-.6cqh 0 0;letter-spacing:.06em}
+.decree{font-style:italic;font-size:calc(1.4 * var(--u));line-height:1.4;margin:0;max-width:calc(54 * var(--u))}
+.opts{display:grid;grid-template-columns:auto 1fr;gap:.9cqh calc(1.2 * var(--u));align-items:center;margin:.6cqh 0}
+.lbl{font-family:'IM Fell English SC', Georgia, serif;font-size:calc(1.45 * var(--u));text-align:right}
+.seg{display:flex;border:calc(.15 * var(--u)) solid #4a3220;justify-self:start}
+.seg button{font:calc(1.35 * var(--u)) 'IM Fell English', Georgia, serif;padding:calc(.45 * var(--u)) calc(1.1 * var(--u));border:0;background:transparent;color:var(--ink);cursor:pointer;min-width:calc(3 * var(--u))}
+.seg button+button{border-left:calc(.15 * var(--u)) solid #4a3220}
 .seg button[aria-pressed="true"]{background:var(--blood);color:var(--parch)}
 .seg button:disabled{opacity:.4;cursor:not-allowed}
 .big{
-  font-family:'IM Fell English SC', Georgia, serif;font-size:2.2cqw;letter-spacing:.08em;padding:.55cqw 3cqw;
-  background:var(--blood);color:var(--parch);border:.15cqw solid #2a0505;cursor:pointer;
-  box-shadow:inset 0 0 0 .25cqw rgba(233,210,170,.25), 0 .5cqw 1cqw rgba(0,0,0,.35);
+  font-family:'IM Fell English SC', Georgia, serif;font-size:calc(2.2 * var(--u));letter-spacing:.08em;padding:calc(.55 * var(--u)) calc(3 * var(--u));
+  background:var(--blood);color:var(--parch);border:calc(.15 * var(--u)) solid #2a0505;cursor:pointer;
+  box-shadow:inset 0 0 0 calc(.25 * var(--u)) rgba(233,210,170,.25), 0 calc(.5 * var(--u)) calc(1 * var(--u)) rgba(0,0,0,.35);
 }
 .big:hover{background:#7e1414}
 .big.alt{background:transparent;color:var(--ink);border-color:#4a3220;box-shadow:none}
 .big.alt:hover{background:rgba(74,50,32,.12)}
-.big.sm{font-size:1.6cqw;padding:.4cqw 1.8cqw}
+.big.sm{font-size:calc(1.6 * var(--u));padding:calc(.4 * var(--u)) calc(1.8 * var(--u))}
 .big:disabled{opacity:.45;cursor:not-allowed}
-button:focus-visible,input:focus-visible{outline:.25cqw solid var(--gold);outline-offset:.3cqw}
-.how{font-size:1.2cqw;line-height:1.45;margin:0;max-width:56cqw;color:#4a3524}
+button:focus-visible,input:focus-visible{outline:calc(.25 * var(--u)) solid var(--gold);outline-offset:calc(.3 * var(--u))}
+.how{font-size:calc(1.2 * var(--u));line-height:1.45;margin:0;max-width:calc(56 * var(--u));color:#4a3524}
 .online{display:flex;flex-direction:column;align-items:center;gap:.8cqh;width:100%}
 .online[hidden]{display:none}
-.list{display:flex;flex-direction:column;gap:.5cqh;width:min(100%,46cqw)}
-.chal{display:flex;justify-content:space-between;align-items:center;gap:1cqw;border:.12cqw solid rgba(74,50,32,.5);padding:.4cqw .9cqw;font-size:1.3cqw;text-align:left}
-.chal small{display:block;font-style:italic;font-size:1.1cqw;color:#5a4330}
-input{font:1.5cqw 'IM Fell English', Georgia, serif;padding:.4cqw .8cqw;width:14cqw;background:rgba(255,250,235,.5);border:.15cqw solid #4a3220;color:var(--ink);text-align:center;letter-spacing:.2em}
-.code{font-family:'IM Fell English SC', Georgia, serif;font-size:6cqw;letter-spacing:.2em;margin:0;color:var(--blood)}
-.hd{font-family:'IM Fell English SC', Georgia, serif;font-size:2.6cqw;margin:0}
+.list{display:flex;flex-direction:column;gap:.5cqh;width:min(100%,calc(46 * var(--u)))}
+.chal{display:flex;justify-content:space-between;align-items:center;gap:calc(1 * var(--u));border:calc(.12 * var(--u)) solid rgba(74,50,32,.5);padding:calc(.4 * var(--u)) calc(.9 * var(--u));font-size:calc(1.3 * var(--u));text-align:left}
+.chal small{display:block;font-style:italic;font-size:calc(1.1 * var(--u));color:#5a4330}
+input{font:calc(1.5 * var(--u)) 'IM Fell English', Georgia, serif;padding:calc(.4 * var(--u)) calc(.8 * var(--u));width:calc(14 * var(--u));background:rgba(255,250,235,.5);border:calc(.15 * var(--u)) solid #4a3220;color:var(--ink);text-align:center;letter-spacing:.2em}
+.code{font-family:'IM Fell English SC', Georgia, serif;font-size:calc(6 * var(--u));letter-spacing:.2em;margin:0;color:var(--blood)}
+.hd{font-family:'IM Fell English SC', Georgia, serif;font-size:calc(2.6 * var(--u));margin:0}
 .seal{
-  position:absolute;right:1.2cqw;bottom:1.2cqw;width:6cqw;height:6cqw;border-radius:50%;
+  position:absolute;right:calc(1.2 * var(--u));bottom:calc(1.2 * var(--u));width:calc(6 * var(--u));height:calc(6 * var(--u));border-radius:50%;
   background:radial-gradient(circle at 35% 30%, #a52222, #5e0808 70%);
-  box-shadow:0 .4cqw 1cqw rgba(0,0,0,.5), inset 0 0 0 .5cqw rgba(0,0,0,.18);
-  display:flex;align-items:center;justify-content:center;color:rgba(255,210,190,.55);font-size:2.8cqw;transform:rotate(-12deg);pointer-events:none;
+  box-shadow:0 calc(.4 * var(--u)) calc(1 * var(--u)) rgba(0,0,0,.5), inset 0 0 0 calc(.5 * var(--u)) rgba(0,0,0,.18);
+  display:flex;align-items:center;justify-content:center;color:rgba(255,210,190,.55);font-size:calc(2.8 * var(--u));transform:rotate(-12deg);pointer-events:none;
 }
-.slain{font-family:'UnifrakturMaguntia', serif;font-size:9cqw;line-height:1;margin:0;color:var(--blood)}
-.verdict{font-size:2.1cqw;margin:0;font-style:italic;max-width:54cqw}
-.tally{font-family:'IM Fell English SC', Georgia, serif;font-size:1.7cqw;margin:0;letter-spacing:.05em}
-.row{display:flex;gap:1.2cqw;align-items:center;justify-content:center;flex-wrap:wrap}
-.corner{position:absolute;bottom:1.4cqh;left:50%;transform:translateX(-50%);white-space:nowrap;display:flex;gap:.8cqw;align-items:center}
+.slain{font-family:'UnifrakturMaguntia', serif;font-size:calc(9 * var(--u));line-height:1;margin:0;color:var(--blood)}
+.verdict{font-size:calc(2.1 * var(--u));margin:0;font-style:italic;max-width:calc(54 * var(--u))}
+.tally{font-family:'IM Fell English SC', Georgia, serif;font-size:calc(1.7 * var(--u));margin:0;letter-spacing:.05em}
+.row{display:flex;gap:calc(1.2 * var(--u));align-items:center;justify-content:center;flex-wrap:wrap}
+.corner{position:absolute;bottom:1.4cqh;left:50%;transform:translateX(-50%);white-space:nowrap;display:flex;gap:calc(.8 * var(--u));align-items:center}
 .corner[hidden]{display:none}
-.mini{font:1.2cqw 'IM Fell English SC', Georgia, serif;background:rgba(20,14,10,.75);color:var(--text);border:.12cqw solid #6b5a42;padding:.3cqw .9cqw;cursor:pointer}
+.mini{font:calc(1.2 * var(--u)) 'IM Fell English SC', Georgia, serif;background:rgba(20,14,10,.75);color:var(--text);border:calc(.12 * var(--u)) solid #6b5a42;padding:calc(.3 * var(--u)) calc(.9 * var(--u));cursor:pointer}
 .mini:hover{background:rgba(60,40,25,.85)}
-.netTag{font-style:italic;font-size:1.2cqw;color:rgba(233,223,202,.75)}
-.slain.won{font-size:6.5cqw}
-.ste-logo{display:block;width:18cqw;height:auto;margin:.4cqh auto 0;opacity:.9}
+.netTag{font-style:italic;font-size:calc(1.2 * var(--u));color:rgba(233,223,202,.75)}
+.slain.won{font-size:calc(6.5 * var(--u))}
+#turn{display:none}
+@media (orientation: portrait) and (pointer: coarse){
+  #turn{display:flex;position:fixed;inset:0;z-index:50;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;text-align:center;
+    background:radial-gradient(ellipse at 50% 40%, #2a211a, #050403 75%);color:var(--parch)}
+  #turn .ph{font-size:64px;animation:tilt 2.4s ease-in-out infinite}
+  #turn .t{font-family:'UnifrakturMaguntia', serif;font-size:40px;color:#c9b27a;margin:0}
+  #turn p{font-size:20px;margin:0;max-width:280px;line-height:1.4}
+  @keyframes tilt{0%,25%{transform:rotate(0)}50%,75%{transform:rotate(-90deg)}100%{transform:rotate(0)}}
+  @media (prefers-reduced-motion: reduce){#turn .ph{animation:none;transform:rotate(-90deg)}}
+}
+.ste-logo{display:block;width:calc(18 * var(--u));height:auto;margin:.4cqh auto 0;opacity:.9}
 </style>
 </head>
 <body>
@@ -187,6 +198,13 @@ input{font:1.5cqw 'IM Fell English', Georgia, serif;padding:.4cqw .8cqw;width:14
   </div>
 </div>
 
+<!-- Shown on phones held upright: the hunt needs the phone on its side -->
+<div id="turn" role="alert">
+  <div class="ph" aria-hidden="true">📱</div>
+  <p class="t">Archer Duel</p>
+  <p>Turn your phone on its side to take the field.</p>
+</div>
+
 <script>
 (() => {
 const $ = s => document.querySelector(s);
@@ -197,7 +215,7 @@ const SC = "'IM Fell English SC', Georgia, serif";
 const BLACK = "'UnifrakturMaguntia', 'Old English Text MT', serif";
 const BLOOD = ['#6e0b0b', '#8a1010', '#4d0505', '#5e0808'];
 const cvs = $('#c'), ctx = cvs.getContext('2d');
-let scale = 1;
+let scale = 1, offX = 0, offY = 0, XL = 0, XR = W, YT = 0, YB = H; // see resize()
 const rand = (a, b) => a + Math.random() * (b - a);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const num = (v, d = 0) => Number.isFinite(v) ? v : d;
@@ -303,14 +321,18 @@ function buildLevel() {
 
 /* ---------------- resize ---------------- */
 const bg = document.createElement('canvas'), bctx = bg.getContext('2d');
+// The game fills the whole screen. The field (W x H) keeps its shape and sits in the middle;
+// on screens wider or taller than 16:9 the scenery carries on past its edges (XL..XR, YT..YB).
 function resize() {
-  const b = document.body, bw = b.clientWidth, bh = b.clientHeight;
-  const m = Math.max(24, Math.min(bw, bh) * 0.05);
-  const w = Math.max(240, Math.min(bw - m, (bh - m) * 16 / 9));
-  const s = $('#screen'); s.style.width = w + 'px'; s.style.height = (w * 9 / 16) + 'px';
+  const b = document.body, bw = Math.max(240, b.clientWidth), bh = Math.max(135, b.clientHeight);
+  const s = $('#screen'); s.style.width = bw + 'px'; s.style.height = bh + 'px';
   const dpr = Math.min(2, window.devicePixelRatio || 1);
-  cvs.width = Math.round(w * dpr); cvs.height = Math.round(w * 9 / 16 * dpr);
-  scale = cvs.width / W; bg.width = cvs.width; bg.height = cvs.height; buildBackdrop();
+  cvs.width = Math.round(bw * dpr); cvs.height = Math.round(bh * dpr);
+  scale = Math.min(cvs.width / W, cvs.height / H);
+  offX = (cvs.width - W * scale) / 2; offY = (cvs.height - H * scale) / 2;
+  XL = -offX / scale; XR = W + offX / scale; YT = -offY / scale; YB = H + offY / scale;
+  bg.width = cvs.width; bg.height = cvs.height; buildBackdrop();
+  if (typeof weather !== 'undefined' && weather.length) initWeather(); // spread rain/snow across the new width
 }
 
 /* ---------------- audio ---------------- */
@@ -573,7 +595,10 @@ function cpuUpdate(dt) {
 }
 
 /* ---------------- input ---------------- */
-function toWorld(e) { const r = cvs.getBoundingClientRect(); return { x: (e.clientX - r.left) / r.width * W, y: (e.clientY - r.top) / r.height * H }; }
+function toWorld(e) {
+  const r = cvs.getBoundingClientRect(), k = cvs.width / r.width;
+  return { x: ((e.clientX - r.left) * k - offX) / scale, y: ((e.clientY - r.top) * k - offY) / scale };
+}
 function stepBtns(p) { const y = groundY(p.home) + 64; return [{ x: Math.max(40, p.home - 100), y, d: -1 }, { x: Math.min(W - 40, p.home + 100), y, d: 1 }]; }
 cvs.addEventListener('pointerdown', e => {
   ac(); if (state !== 'play') return;
@@ -940,8 +965,8 @@ function arrowVsBirds(a) {
 let weather = [];
 const clouds = Array.from({ length: 8 }, () => ({ x: rand(-200, W), y: rand(20, 230), s: rand(.8, 1.8), v: rand(4, 10) }));
 function initWeather() {
-  const n = cfg.setting === 'dusk' ? 180 : cfg.setting === 'winter' ? 170 : 40;
-  weather = Array.from({ length: n }, () => ({ x: rand(0, W), y: rand(0, H), s: rand(.5, 1), ph: rand(0, 6) }));
+  const n = (cfg.setting === 'dusk' ? 180 : cfg.setting === 'winter' ? 170 : 40) * (XR - XL) / W;
+  weather = Array.from({ length: Math.round(n) }, () => ({ x: rand(XL, XR), y: rand(YT, YB), s: rand(.5, 1), ph: rand(0, 6) }));
 }
 function update(rdt) {
   time += rdt;
@@ -954,10 +979,10 @@ function update(rdt) {
     if (cfg.setting === 'dusk') { r.x += (windShown * 1.3 - 30) * rdt * r.s; r.y += 950 * rdt * r.s; }
     else if (cfg.setting === 'winter') { r.x += (windShown * .7 + Math.sin(time * 1.5 + r.ph) * 20) * rdt; r.y += (50 + 60 * r.s) * rdt; }
     else { r.x += (windShown * .3 + Math.sin(time + r.ph) * 12) * rdt; r.y += Math.cos(time * .8 + r.ph) * 10 * rdt; }
-    if (r.y > H) { r.y = rand(-40, 0); r.x = rand(-100, W + 100); }
-    if (r.x < -120) r.x += W + 200; if (r.x > W + 120) r.x -= W + 200;
+    if (r.y > YB) { r.y = rand(YT - 40, YT); r.x = rand(XL - 100, XR + 100); }
+    if (r.x < XL - 120) r.x += XR - XL + 200; if (r.x > XR + 120) r.x -= XR - XL + 200;
   }
-  for (const c of clouds) { c.x += (c.v + windShown * .05) * rdt; if (c.x > W + 300) c.x = -300; if (c.x < -300) c.x = W + 300; }
+  for (const c of clouds) { c.x += (c.v + windShown * .05) * rdt; if (c.x > XR + 300) c.x = XL - 300; if (c.x < XL - 300) c.x = XR + 300; }
 
   if (role === 'guest' || role === 'spec') { if (NET.room) guestSync(); }
   if (role === 'host' && NET.room && NET.guestPeer && players.length) hostReadGuest();
@@ -1082,19 +1107,21 @@ const PAL = {
 function buildBackdrop() {
   if (!bg.width) return;
   const c = bctx, R = seeded(7 + seed % 97), P = PAL[cfg.setting] || PAL.dusk;
-  c.setTransform(scale, 0, 0, scale, 0, 0); c.clearRect(0, 0, W, H);
+  c.setTransform(scale, 0, 0, scale, offX, offY); c.clearRect(XL, YT, XR - XL, YB - YT);
+  // scenery reaches the screen edges (XL..XR, YT..YB); the ground stays level past the field's ends
+  const EW = XR - XL, gY = x => groundY(clamp(x, 0, W)), more = EW / W;
   const g = c.createLinearGradient(0, 0, 0, 930);
   P.sky.forEach((col, i) => g.addColorStop([0, .45, .8, 1][i], col));
-  c.fillStyle = g; c.fillRect(0, 0, W, H);
-  if (cfg.setting === 'night') for (let i = 0; i < 160; i++) { c.fillStyle = `rgba(230,235,255,${.2 + R() * .6})`; c.fillRect(R() * W, R() * 690, R() < .1 ? 2 : 1.2, R() < .1 ? 2 : 1.2); }
+  c.fillStyle = g; c.fillRect(XL, YT, EW, YB - YT);
+  if (cfg.setting === 'night') for (let i = 0; i < 160 * more; i++) { c.fillStyle = `rgba(230,235,255,${.2 + R() * .6})`; c.fillRect(XL + R() * EW, YT + R() * (690 - YT), R() < .1 ? 2 : 1.2, R() < .1 ? 2 : 1.2); }
   const ox = 520, oy = cfg.setting === 'night' ? 690 : 780;
   const sg = c.createRadialGradient(ox, oy, 10, ox, oy, 300); sg.addColorStop(0, P.glow); sg.addColorStop(1, 'rgba(0,0,0,0)');
   c.fillStyle = sg; c.fillRect(0, 200, W, 600);
   c.beginPath(); c.arc(ox, oy, 38, 0, Math.PI * 2); c.fillStyle = P.orb; c.fill();
   // far ridge
-  c.beginPath(); c.moveTo(0, 850);
-  for (let x = 0; x <= W; x += 40) c.lineTo(x, 820 - Math.sin(x * .005 + 1) * 34 - R() * 12);
-  c.lineTo(W, H); c.lineTo(0, H); c.closePath(); c.fillStyle = P.ridge; c.fill();
+  c.beginPath(); c.moveTo(XL, 850);
+  for (let x = XL; x <= XR + 40; x += 40) c.lineTo(x, 820 - Math.sin(x * .005 + 1) * 34 - R() * 12);
+  c.lineTo(XR + 40, YB); c.lineTo(XL, YB); c.closePath(); c.fillStyle = P.ridge; c.fill();
   // castle
   c.save(); c.translate(330, 170);
   c.beginPath(); c.moveTo(1040, 680); c.quadraticCurveTo(1190, 560, 1380, 680); c.closePath(); c.fillStyle = P.ridge; c.fill();
@@ -1105,26 +1132,26 @@ function buildBackdrop() {
   c.fillStyle = P.win; [[1188, 500], [1108, 535], [1266, 545], [1150, 595], [1225, 598]].forEach(([x, y]) => c.fillRect(x, y, 4, 7));
   c.restore();
   // near hills
-  c.beginPath(); c.moveTo(0, H);
-  for (let x = 0; x <= W; x += 30) c.lineTo(x, 885 - Math.sin(x * .004) * 26 - Math.sin(x * .017) * 8);
-  c.lineTo(W, H); c.closePath(); c.fillStyle = P.hill; c.fill();
+  c.beginPath(); c.moveTo(XL, YB);
+  for (let x = XL; x <= XR + 30; x += 30) c.lineTo(x, 885 - Math.sin(x * .004) * 26 - Math.sin(x * .017) * 8);
+  c.lineTo(XR + 30, YB); c.closePath(); c.fillStyle = P.hill; c.fill();
   // dead tree
   c.strokeStyle = P.tree; c.lineCap = 'round';
   const br = (x, y, a, l, w) => { if (w < 1) return; const x2 = x + Math.cos(a) * l, y2 = y + Math.sin(a) * l; c.lineWidth = w; c.beginPath(); c.moveTo(x, y); c.lineTo(x2, y2); c.stroke(); br(x2, y2, a - .45 - R() * .2, l * .72, w * .66); br(x2, y2, a + .35 + R() * .2, l * .68, w * .62); };
   br(310, Math.min(groundY(310), 930) + 6, -Math.PI / 2 - .08, 72, 9);
   // terrain
   let top = H; for (let x = 0; x <= W; x += 16) top = Math.min(top, groundY(x));
-  const tp = new Path2D(); tp.moveTo(0, H); for (let x = 0; x <= W; x += 8) tp.lineTo(x, groundY(x)); tp.lineTo(W, H); tp.closePath();
+  const tp = new Path2D(); tp.moveTo(XL, YB); for (let x = XL; x <= XR + 8; x += 8) tp.lineTo(x, gY(x)); tp.lineTo(XR + 8, YB); tp.closePath();
   const gg = c.createLinearGradient(0, top, 0, H); gg.addColorStop(0, P.g1); gg.addColorStop(1, P.g2);
   c.fillStyle = gg; c.fill(tp);
   c.save(); c.clip(tp);
-  for (let i = 0; i < 1200; i++) { const x = R() * W, y = groundY(x) + R() * (H - groundY(x)); c.fillStyle = R() < .5 ? 'rgba(0,0,0,.2)' : 'rgba(140,120,90,.15)'; c.fillRect(x, y, 2 + R() * 3, 1 + R() * 2); }
-  if (cfg.setting !== 'winter') for (let i = 0; i < 26; i++) { const x = R() * W, y = groundY(x) + 22 + R() * 70; c.beginPath(); c.ellipse(x, y, 20 + R() * 40, 3 + R() * 4, 0, 0, Math.PI * 2); c.fillStyle = cfg.setting === 'night' ? 'rgba(150,170,210,.14)' : 'rgba(90,95,100,.22)'; c.fill(); }
-  else for (let i = 0; i < 40; i++) { const x = R() * W, y = groundY(x) + 14 + R() * 90; c.beginPath(); c.ellipse(x, y, 10 + R() * 30, 2 + R() * 3, 0, 0, Math.PI * 2); c.fillStyle = 'rgba(80,70,55,.25)'; c.fill(); }
+  for (let i = 0; i < 1200 * more; i++) { const x = XL + R() * EW, y = gY(x) + R() * (YB - gY(x)); c.fillStyle = R() < .5 ? 'rgba(0,0,0,.2)' : 'rgba(140,120,90,.15)'; c.fillRect(x, y, 2 + R() * 3, 1 + R() * 2); }
+  if (cfg.setting !== 'winter') for (let i = 0; i < 26 * more; i++) { const x = XL + R() * EW, y = gY(x) + 22 + R() * 70; c.beginPath(); c.ellipse(x, y, 20 + R() * 40, 3 + R() * 4, 0, 0, Math.PI * 2); c.fillStyle = cfg.setting === 'night' ? 'rgba(150,170,210,.14)' : 'rgba(90,95,100,.22)'; c.fill(); }
+  else for (let i = 0; i < 40 * more; i++) { const x = XL + R() * EW, y = gY(x) + 14 + R() * 90; c.beginPath(); c.ellipse(x, y, 10 + R() * 30, 2 + R() * 3, 0, 0, Math.PI * 2); c.fillStyle = 'rgba(80,70,55,.25)'; c.fill(); }
   c.restore();
   c.strokeStyle = P.grass; c.lineWidth = 2;
-  for (let x = 0; x < W; x += cfg.setting === 'winter' ? 13 : 5) { if (cfg.setting === 'winter' && R() < .5) continue; const h = 4 + R() * 10, gy = groundY(x); c.beginPath(); c.moveTo(x, gy + 2); c.lineTo(x + R() * 4 - 2, gy - h); c.stroke(); }
-  c.beginPath(); for (let x = 0; x <= W; x += 8) c.lineTo(x, groundY(x) + 1); c.lineWidth = 3; c.strokeStyle = P.lip; c.stroke();
+  for (let x = XL; x < XR; x += cfg.setting === 'winter' ? 13 : 5) { if (cfg.setting === 'winter' && R() < .5) continue; const h = 4 + R() * 10, gy = gY(x); c.beginPath(); c.moveTo(x, gy + 2); c.lineTo(x + R() * 4 - 2, gy - h); c.stroke(); }
+  c.beginPath(); for (let x = XL; x <= XR + 8; x += 8) c.lineTo(x, gY(x) + 1); c.lineWidth = 3; c.strokeStyle = P.lip; c.stroke();
 }
 
 /* ---------------- dynamic scenery ---------------- */
@@ -1152,7 +1179,7 @@ function drawStakes() {
 function drawFog() {
   const col = cfg.setting === 'night' ? '150,170,210' : cfg.setting === 'winter' ? '235,238,242' : '170,165,150';
   for (let i = 0; i < 3; i++) {
-    const x = ((time * (8 + i * 5) + i * 500) % (W + 800)) - 400, y = 910;
+    const x = XL + ((time * (8 + i * 5) + i * 500) % (XR - XL + 800)) - 400, y = 910;
     const g = ctx.createRadialGradient(x, y, 10, x, y, 440);
     g.addColorStop(0, `rgba(${col},.13)`); g.addColorStop(1, `rgba(${col},0)`);
     ctx.fillStyle = g; ctx.fillRect(x - 450, y - 180, 900, 260);
@@ -1442,10 +1469,10 @@ function drawHUD() {
 }
 
 function draw() {
-  ctx.setTransform(scale, 0, 0, scale, 0, 0);
+  ctx.setTransform(scale, 0, 0, scale, offX, offY);
   ctx.save();
   if (shake > 0) ctx.translate(rand(-shake, shake), rand(-shake, shake));
-  ctx.drawImage(bg, 0, 0, W, H);
+  ctx.drawImage(bg, XL, YT, XR - XL, YB - YT);
   drawSky();
   for (const o of obstacles) drawObstacle(o);
   for (const d of decals) if (d.o) drawDecal(d);

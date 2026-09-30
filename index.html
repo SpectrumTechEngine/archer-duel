@@ -166,17 +166,13 @@ input{font:calc(1.5 * var(--u)) 'IM Fell English', Georgia, serif;padding:calc(.
       <div class="seal" aria-hidden="true">✠</div>
     </div>
   </div>
-  <script>
-    // Online duels use a service that only exists when the game runs inside Claude.
-    // Everywhere else (like the website), hide the option so no one picks something that can't connect.
-    if (!(window.claude && window.claude.use)) document.querySelector('#oppSeg [data-v="online"]')?.remove();
-  </script>
 
   <div class="panel" id="wait" hidden>
     <div class="parch">
       <p class="hd" id="waitTitle">Awaiting a challenger</p>
       <p class="code" id="waitCode"></p>
       <p class="how" id="waitMsg"></p>
+      <button class="big" id="waitInvite" hidden style="background:#1f7a3f;border-color:#0f3d20">Send the code on WhatsApp</button>
       <button class="big alt" id="waitCancel">Leave the field</button>
       <div class="seal" aria-hidden="true">✠</div>
     </div>
@@ -642,21 +638,84 @@ function moveDir(p) {
 /* ---------------- online (room capability) ---------------- */
 const NET = { lobby: null, room: null, user: null, code: '', myPeer: '', hostPeer: '', guestPeer: '', fireSeq: 0, fv: null, re: 0, lastF: 0, lastRe: 0, pendingUntil: 0,
   lastSnap: null, snapAt: 0, lastEvt: -1, pubAt: 0, hostGoneAt: 0, joinAt: 0, unsub: null, names: {} };
-async function netInit() {
-  try {
-    if (!window.claude || typeof window.claude.use !== 'function') return netUnavailable();
-    const r = await window.claude.use('room');
-    if (!r) return netUnavailable();
-    NET.lobby = r;
-    try { NET.user = await window.claude.use('user'); } catch (_) {}
-    r.onPeers(ch => renderLobby(ch.peers), () => netUnavailable());
-    $('#onlineNote').textContent = 'Open a challenge and your opponent can join it from this same page. Open challenges appear below.';
-  } catch (e) { netUnavailable(); }
+/* ---- Online duels on the website ----
+   Inside Claude the game uses Claude's own "room" service. Everywhere else the same
+   room calls (join, presence, peers, onPeers, leave) are carried by Firebase Realtime Database,
+   in Chop the Check's database under rooms/archer-duel-<name>. Each player's entry
+   removes itself when they leave or lose signal. */
+const FIREBASE_CONFIG = {
+  apiKey: 'AIzaSyCFKyTr_-0QC7Vl-HjUpfMibi5Eu4IgKz0',
+  authDomain: 'chopthecheck.firebaseapp.com',
+  databaseURL: 'https://chopthecheck-default-rtdb.europe-west1.firebasedatabase.app',
+  projectId: 'chopthecheck',
+  appId: '1:506847790153:web:109788afc2ad8afc31eb98'
+};
+const RECAPTCHA_SITE_KEY = '6LeJiNAtAAAAAHozjgInBddSFOPOPBOMRsPwQ6qH'; // App Check, same key as Chop the Check
+const FB = 'https://www.gstatic.com/firebasejs/12.19.0/';
+
+async function firebaseRooms() {
+  const [appM, dbM] = await Promise.all([import(FB + 'firebase-app.js'), import(FB + 'firebase-database.js')]);
+  const app = appM.initializeApp(FIREBASE_CONFIG, 'archer-duel');
+  if (/thespectrumtechengine\.com$/.test(location.hostname)) {
+    try { const ac = await import(FB + 'firebase-app-check.js'); ac.initializeAppCheck(app, { provider: new ac.ReCaptchaEnterpriseProvider(RECAPTCHA_SITE_KEY), isTokenAutoRefreshEnabled: true }); } catch (_) {}
+  }
+  const db = dbM.getDatabase(app), me = Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+  const clean = o => JSON.parse(JSON.stringify(o)); // Firebase refuses undefined values
+  async function room(name) {
+    const peersRef = dbM.ref(db, 'rooms/archer-duel-' + name + '/peers'), mine = dbM.child(peersRef, me);
+    let list = [], myP = {}, subs = [];
+    const offVal = dbM.onValue(peersRef, snap => {
+      list = Object.entries(snap.val() || {}).map(([id, d]) => ({ peer: id, isMe: id === me, sameTab: id === me, kind: 'viewer', presence: (d && d.p) || {}, by: '' }));
+      subs.forEach(s => s.ok({ peers: list }));
+    }, () => subs.forEach(s => s.err && s.err()));
+    await dbM.onDisconnect(mine).remove();
+    await dbM.set(mine, { p: {}, t: dbM.serverTimestamp() });
+    // The game asks "which peer am I?" straight after joining, so always include ourselves
+    const withMe = () => list.some(q => q.isMe) ? list : [...list, { peer: me, isMe: true, sameTab: true, kind: 'viewer', presence: myP, by: '' }];
+    return {
+      peers: withMe,
+      presence: o => { myP = { ...myP, ...o }; return dbM.update(mine, { p: clean(myP) }); },
+      onPeers: (ok, err) => { const s = { ok, err }; subs.push(s); ok({ peers: withMe() }); return () => { subs = subs.filter(x => x !== s); }; },
+      join: n => room(n),
+      leave: async () => { offVal(); subs = []; try { await dbM.onDisconnect(mine).cancel(); } catch (_) {} return dbM.remove(mine); },
+    };
+  }
+  return { use: async what => (what === 'room' ? room('lobby') : null) };
+}
+
+let netStarting = null;
+function netInit() {
+  if (NET.lobby) return Promise.resolve();
+  if (netStarting) return netStarting;
+  $('#onlineNote').textContent = 'Opening the gates to the royal forest…';
+  netStarting = (async () => {
+    try {
+      const inClaude = window.claude && typeof window.claude.use === 'function';
+      const api = inClaude ? window.claude : await firebaseRooms();
+      const r = await api.use('room');
+      if (!r) return netUnavailable();
+      NET.lobby = r;
+      if (inClaude) { try { NET.user = await window.claude.use('user'); } catch (_) {} }
+      r.onPeers(ch => renderLobby(ch.peers), () => netUnavailable());
+      $('#onlineNote').textContent = 'Open a challenge and send your opponent the code, or accept a challenge below.';
+    } catch (e) { console.warn(e); netUnavailable(); }
+    finally { netStarting = null; if (cfg.opp === 'online') $('#startBtn').disabled = !NET.lobby; }
+  })();
+  return netStarting;
 }
 function netUnavailable() {
   NET.lobby = null;
-  $('#onlineNote').textContent = 'Online play is not available in this view. Open the published page while signed in, and share it with your opponent.';
+  $('#onlineNote').textContent = 'The royal forest could not be reached. Check your internet connection, then choose Online again.';
   renderLobby([]);
+}
+
+// "Send the code on WhatsApp": a link that opens the game and joins this duel
+const GAME_URL = 'https://thespectrumtechengine.com/archer-duel/';
+function inviteDuel() {
+  const text = `🏹 I challenge you to a duel in Archer Duel: The King's Hunt! Tap to take the field (code ${NET.code}):\n${GAME_URL}?duel=${NET.code}`;
+  if (navigator.share) { navigator.share({ text }).catch(() => {}); return; }
+  const wa = 'https://wa.me/?text=' + encodeURIComponent(text);
+  if (!window.open(wa, '_blank')) location.href = wa;
 }
 function myPeerIn(room) { const me = room.peers().find(q => q.isMe && q.sameTab); return me ? me.peer : ''; }
 async function renderLobby(peers) {
@@ -684,6 +743,7 @@ async function renderLobby(peers) {
 function showWait(title, code, msg, btn = 'Leave the field') {
   hidePanels(); $('#wait').hidden = false;
   $('#waitTitle').textContent = title; $('#waitCode').textContent = code; $('#waitMsg').textContent = msg; $('#waitCancel').textContent = btn;
+  $('#waitInvite').hidden = !(role === 'host' && code);
 }
 async function hostDuel() {
   if (!NET.lobby) return;
@@ -698,7 +758,7 @@ async function hostDuel() {
   NET.lobby.presence({ open: code, cfg: { mode: cfg.mode, n: cfg.n, terrain: cfg.terrain, target: cfg.target } }).catch(() => {});
   NET.unsub = NET.room.onPeers(ch => hostPeers(ch.peers), () => netLost('The connection to the duel was lost.'));
   state = 'waiting';
-  showWait('Awaiting a challenger', code, 'Share this page with your opponent. They choose Online and accept your challenge, or join with this code. Anyone else who joins will watch.');
+  showWait('Awaiting a challenger', code, 'Send your opponent the code on WhatsApp, or they can choose Online and accept your challenge. Anyone else who joins will watch.');
 }
 function hostPeers(peers) {
   if (role !== 'host') return;
@@ -1530,6 +1590,7 @@ seg('#oppSeg', v => {
   $('#onlineBox').hidden = !on; $('#howTxt').hidden = on;
   $('#startBtn').textContent = on ? 'Open a challenge' : 'Take the field';
   $('#startBtn').disabled = on && !NET.lobby;
+  if (on && !NET.lobby) netInit();
 });
 $('#startBtn').onclick = () => {
   ac();
@@ -1550,12 +1611,21 @@ function toMenu() {
   $('#startBtn').disabled = cfg.opp === 'online' && !NET.lobby;
 }
 $('#toMenuBtn').onclick = toMenu; $('#menuBtn').onclick = toMenu; $('#waitCancel').onclick = toMenu;
+$('#waitInvite').onclick = inviteDuel;
 $('#muteBtn').onclick = () => { muted = !muted; $('#muteBtn').textContent = muted ? 'Sound off' : 'Sound on'; };
 
 window.addEventListener('resize', resize);
 seed = 11; buildSkyPath(); obstacles = genObstacles(cfg.n, seed); initWeather();
 resize(); buildLevel();
-netInit();
+// Inside Claude, open the lobby straight away; on the website, only when someone picks Online (see #oppSeg)
+if (window.claude && typeof window.claude.use === 'function') netInit();
+// An invite link (…/archer-duel/?duel=1234) opens Online and joins that duel
+const inviteCode = (new URLSearchParams(location.search).get('duel') || '').replace(/\D/g, '').slice(0, 4);
+if (inviteCode.length === 4) {
+  document.querySelector('#oppSeg [data-v="online"]').click();
+  $('#codeIn').value = inviteCode;
+  netInit().then(() => { if (NET.lobby) joinDuel(inviteCode); });
+}
 const fontsReady = document.fonts && document.fonts.load
   ? Promise.all([document.fonts.load(`40px 'IM Fell English'`), document.fonts.load(`40px 'IM Fell English SC'`), document.fonts.load(`40px 'UnifrakturMaguntia'`)]).catch(() => {})
   : Promise.resolve();

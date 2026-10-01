@@ -47,7 +47,7 @@ body{
 canvas{display:block;width:100%;height:100%;cursor:crosshair}
 .fx{position:absolute;inset:0;pointer-events:none}
 .grain{opacity:.13;mix-blend-mode:overlay;animation:grain .5s steps(5) infinite}
-.vig{background:radial-gradient(ellipse at center, transparent 50%, rgba(10,5,2,.72) 100%)}
+.vig{background:radial-gradient(ellipse at center, transparent 60%, rgba(10,5,2,.38) 100%)}
 @keyframes grain{0%{background-position:0 0}20%{background-position:-40px 20px}40%{background-position:30px -50px}60%{background-position:-60px -10px}80%{background-position:20px 60px}100%{background-position:0 0}}
 @media (prefers-reduced-motion: reduce){.grain{animation:none}}
 
@@ -108,6 +108,11 @@ input{font:calc(1.5 * var(--u)) 'IM Fell English', Georgia, serif;padding:calc(.
 .mini:hover{background:rgba(60,40,25,.85)}
 .netTag{font-style:italic;font-size:calc(1.2 * var(--u));color:rgba(233,223,202,.75)}
 .slain.won{font-size:calc(6.5 * var(--u))}
+/* "Sir ___ of ___" name boxes */
+.namebox{display:flex;align-items:center;gap:calc(.6 * var(--u));justify-self:start;font-family:'IM Fell English SC', Georgia, serif;font-size:calc(1.4 * var(--u))}
+.namebox input{width:calc(12 * var(--u));letter-spacing:0;text-align:left}
+.namebox input#placeIn,.namebox input#place2In{width:calc(15 * var(--u))}
+.namebox[hidden],.lbl[hidden]{display:none}
 /* ---------- Phones: menus upright, the hunt itself sideways ---------- */
 #turn{display:none}
 @media (orientation: portrait) and (pointer: coarse){
@@ -136,6 +141,8 @@ input{font:calc(1.5 * var(--u)) 'IM Fell English', Georgia, serif;padding:calc(.
   .seg{display:grid;grid-template-columns:repeat(auto-fit,minmax(78px,1fr));gap:6px;border:0;width:100%;justify-self:stretch}
   .seg button,.seg button+button{font-size:17px;padding:10px 6px;min-height:48px;min-width:0;border:2px solid #4a3220}
   #nSeg{grid-template-columns:repeat(6,1fr)}
+  .namebox{width:100%;gap:8px;font-size:18px;justify-self:stretch}
+  .namebox input,.namebox input#placeIn,.namebox input#place2In{flex:1;min-width:0;width:auto;font-size:18px;padding:10px;min-height:46px}
   #terrSeg{grid-template-columns:repeat(3,1fr)}
   .big{font-size:22px;padding:12px 20px;min-height:56px;width:100%;border-width:2px}
   .big.sm{font-size:18px;min-height:50px;width:auto}
@@ -193,14 +200,18 @@ input{font:calc(1.5 * var(--u)) 'IM Fell English', Georgia, serif;padding:calc(.
       <p class="sub">The King's hunt</p>
       <p class="decree">The King has opened the royal forest for a single day. Sir Aldric and Lord Corvin have wagered their lands on who brings down the finer bag, and the royal huntsman keeps the tally.</p>
       <div class="opts">
+        <span class="lbl">Your name</span>
+        <div class="namebox">Sir <input id="nameIn" maxlength="14" placeholder="Aldric" autocomplete="off" aria-label="Your name"> of <input id="placeIn" maxlength="18" placeholder="Trim Town" autocomplete="off" aria-label="Where you hail from"></div>
+        <span class="lbl" id="name2Lbl">Second hunter</span>
+        <div class="namebox" id="name2Box">Sir <input id="name2In" maxlength="14" placeholder="Corvin" autocomplete="off" aria-label="Second hunter's name"> of <input id="place2In" maxlength="18" placeholder="Blackmoor" autocomplete="off" aria-label="Where the second hunter hails from"></div>
         <span class="lbl">The rules</span>
         <div class="seg" id="modeSeg"><button data-v="turn" aria-pressed="true">Measured turns</button><button data-v="live" aria-pressed="false">Open combat</button></div>
         <span class="lbl">First to</span>
         <div class="seg" id="tgSeg"><button data-v="15" aria-pressed="false">15 points</button><button data-v="25" aria-pressed="true">25</button><button data-v="50" aria-pressed="false">50</button><button data-v="100" aria-pressed="false">100</button></div>
         <span class="lbl">Obstacles</span>
         <div class="seg" id="nSeg"><button data-v="0" aria-pressed="false">0</button><button data-v="1" aria-pressed="false">1</button><button data-v="2" aria-pressed="false">2</button><button data-v="3" aria-pressed="true">3</button><button data-v="4" aria-pressed="false">4</button><button data-v="5" aria-pressed="false">5</button></div>
-        <span class="lbl">Terrain</span>
-        <div class="seg" id="terrSeg"><button data-v="flat" aria-pressed="true">Flat</button><button data-v="hill" aria-pressed="false">Hill</button><button data-v="ravine" aria-pressed="false">Ravine</button><button data-v="high" aria-pressed="false">High ground</button><button data-v="broken" aria-pressed="false">Broken</button></div>
+        <span class="lbl">The place</span>
+        <div class="seg" id="terrSeg"><button data-v="flat" aria-pressed="true">Meadow</button><button data-v="hill" aria-pressed="false">Mountain</button><button data-v="ravine" aria-pressed="false">Bridge</button><button data-v="high" aria-pressed="false">Beach</button><button data-v="broken" aria-pressed="false">Forest</button></div>
         <span class="lbl">Setting</span>
         <div class="seg" id="setSeg"><button data-v="dusk" aria-pressed="true">Dusk rain</button><button data-v="winter" aria-pressed="false">Winter</button><button data-v="night" aria-pressed="false">Night</button></div>
         <span class="lbl">Opponent</span>
@@ -259,7 +270,10 @@ input{font:calc(1.5 * var(--u)) 'IM Fell English', Georgia, serif;padding:calc(.
 <script>
 (() => {
 const $ = s => document.querySelector(s);
-const W = 2000, H = 1125, GB = 975, CX = 1000;
+// The field is H tall and W wide. On one phone W stretches to fit the screen (see setField);
+// online it stays 2000 so both players see exactly the same field.
+let W = 2000, CX = 1000;
+const H = 1125, GB = 975;
 const GRAV = 900, MAXPULL = 150, MAXSPD = 1480, STEP = 80, CS = 1.2;
 const SERIF = "'IM Fell English', Georgia, serif";
 const SC = "'IM Fell English SC', Georgia, serif";
@@ -316,10 +330,14 @@ const LEVEL_TEXT = { 2: 'Pigeons and pheasant take wing', 3: 'Swallows and geese
 
 /* ---------------- terrain ---------------- */
 let bumpR = [0, 0, 0];
+const BRIDGE = 360; // half the length of the rope bridge (Bridge map)
 function groundY(x) {
   switch (cfg.terrain) {
     case 'hill': return GB + 5 - 235 * Math.exp(-Math.pow((x - CX) / 370, 2));
-    case 'ravine': return GB - 40 + 170 * Math.exp(-Math.pow((x - CX) / 310, 2));
+    case 'ravine': { // the bridge: two cliff tops joined by a sagging rope bridge over a gorge
+      const d = Math.abs(x - CX);
+      return d < BRIDGE ? GB - 70 + 38 * (1 - (d / BRIDGE) * (d / BRIDGE)) : GB - 70;
+    }
     case 'high': { const e = Math.max(1 - clamp((x - 300) / 340, 0, 1), 1 - clamp((W - 300 - x) / 340, 0, 1)); return GB + 20 - 170 * smooth(e); }
     case 'broken': return GB - 3 + Math.sin(x * .009 + bumpR[0]) * 28 + Math.sin(x * .022 + bumpR[1]) * 14 - 80 * Math.exp(-Math.pow((x - 620 - bumpR[2] * 760) / 140, 2));
     default: return GB;
@@ -341,6 +359,7 @@ function genObstacles(n, sd) {
     let o;
     if (pillar) {
       const w = 40 + Math.floor(R() * 46), h = 110 + Math.floor(R() * 220), x = 580 + Math.floor(R() * (W - 1160 - w));
+      if (cfg.terrain === 'ravine' && x + w > CX - BRIDGE - 30 && x < CX + BRIDGE + 30) continue; // no stone pillars on a rope bridge
       const gb = Math.max(groundY(x), groundY(x + w), groundY(x + w / 2)) + 8, gt = Math.min(groundY(x), groundY(x + w));
       o = { x, y: gt - h, w, h: gb - (gt - h), mat: 'stone' };
     } else {
@@ -361,7 +380,14 @@ function genObstacles(n, sd) {
 }
 function moveObs(o) { if (!o.mv) return; const v = Math.sin(gameT * o.mv.sp) * o.mv.amp; if (o.mv.ax === 'y') o.y = o.by + v; else o.x = o.bx + v; }
 
+// Same-screen and computer hunts use the whole screen width; online hunts keep the standard field.
+// Capped at 2400 so the far hunter is always within an arrow's range.
+function setField() {
+  const wide = role === 'local' && cvs.height ? clamp(Math.round(H * cvs.width / cvs.height), 2000, 2400) : 2000;
+  if (wide !== W) { W = wide; CX = W / 2; builtKey = ''; resize(); }
+}
 function buildLevel() {
+  setField();
   const R = seeded(seed * 31 + 5); bumpR = [R() * 6, R() * 6, R()];
   buildSkyPath();
   obstacles = genObstacles(cfg.n, seed);
@@ -415,7 +441,24 @@ const sfx = {
   draw: () => tone(85, .35, 'sawtooth', .05, 120),
   tick: () => tone(420, .05, 'triangle', .06),
   step: () => noise(.05, .08, 0, 400),
-  squawk: () => { tone(760, .28, 'sawtooth', .09, 240); noise(.2, .25, 0, 1800, 'bandpass'); },
+  // a cartoon "SQUAA!": the pitch leaps up then tumbles down, with a warble; each bird has its own voice
+  squawk: (t, big) => {
+    if (muted) return; const a = ac(); if (!a) return;
+    const base = { raven: 520, pigeon: 650, swallow: 1150, pheasant: 720, goose: 360, eagle: 950 }[t] || 600;
+    const now = a.currentTime, f = base * (0.9 + Math.random() * 0.25), d = big ? .55 : .32;
+    const o = a.createOscillator(), o2 = a.createOscillator(), lfo = a.createOscillator(), lg = a.createGain(), bp = a.createBiquadFilter(), g = a.createGain();
+    o.type = 'sawtooth'; o2.type = 'square';
+    o.frequency.setValueAtTime(f * .8, now); o.frequency.exponentialRampToValueAtTime(f * 1.7, now + .05); o.frequency.exponentialRampToValueAtTime(f * .55, now + d);
+    o2.frequency.setValueAtTime(f * .4, now); o2.frequency.exponentialRampToValueAtTime(f * .85, now + .05); o2.frequency.exponentialRampToValueAtTime(f * .28, now + d);
+    lfo.frequency.value = 26; lg.gain.value = f * .07; lfo.connect(lg); lg.connect(o.frequency);
+    bp.type = 'bandpass'; bp.frequency.value = f * 2.2; bp.Q.value = 3;
+    g.gain.setValueAtTime(.0001, now); g.gain.exponentialRampToValueAtTime(t === 'goose' ? .32 : .24, now + .02); g.gain.exponentialRampToValueAtTime(.0001, now + d);
+    o.connect(bp); o2.connect(bp); bp.connect(g).connect(a.destination);
+    for (const x of [o, o2, lfo]) { x.start(now); x.stop(now + d + .05); }
+    noise(.08, .14, 0, 2600, 'bandpass'); // puff of feathers
+  },
+  clack: () => { tone(1900, .05, 'square', .07, 1200); noise(.04, .2, 0, 4000, 'highpass'); },
+  combo: () => [523, 659, 784, 1047, 1319].forEach((f, i) => tone(f, .22, 'triangle', .12, null, i * .07)),
   angry: () => { for (let i = 0; i < 5; i++) tone(130 + Math.random() * 70, .11, 'sawtooth', .07, 85, i * .09); },
   grunt: () => tone(120, .22, 'sawtooth', .06, 80),
   horn: () => { tone(196, .5, 'sawtooth', .07); tone(294, .8, 'sawtooth', .07, null, .45); },
@@ -435,6 +478,31 @@ const STYLE = [
   { name: 'Sir Aldric', short: 'Aldric', tabard: '#24395a', tabard2: '#172640', charge: '#cdc3a6', fletch: '#2e4a75', hose: '#3a3027', skin: '#d4a07c', hood: '#4a4f36' },
   { name: 'Lord Corvin', short: 'Corvin', tabard: '#5e1515', tabard2: '#3d0c0c', charge: '#a8874a', fletch: '#7a1c1c', hose: '#26221e', skin: '#c28d6c' },
 ];
+/* ---------------- hunters' names: always "Sir <name>", with "of <place>" if given ---------------- */
+const NAMES = [{ full: 'Sir Aldric', short: 'Aldric' }, { full: 'Lord Corvin', short: 'Corvin' }];
+const cleanTxt = (s, n) => String(s || '').replace(/[<>"]/g, '').replace(/\s+/g, ' ').trim().slice(0, n);
+function mkName(first, place, fallback) {
+  first = cleanTxt(first, 14) || fallback; place = cleanTxt(place, 18);
+  return { full: 'Sir ' + first + (place ? ' of ' + place : ''), short: first };
+}
+// a full name received from the other phone
+function nameFrom(full, fallback) {
+  full = cleanTxt(full, 40); if (!full) return { full: 'Sir ' + fallback, short: fallback };
+  return { full, short: full.replace(/^(Sir|Lord)\s+/i, '').replace(/\s+of\s+.*$/i, '') || fallback };
+}
+const myName = () => mkName($('#nameIn').value, $('#placeIn').value, 'Aldric');
+function saveNames() {
+  try { localStorage.setItem('archer-names', JSON.stringify({ n: $('#nameIn').value, p: $('#placeIn').value, n2: $('#name2In').value, p2: $('#place2In').value })); } catch (_) {}
+}
+function loadNames() {
+  try { const s = JSON.parse(localStorage.getItem('archer-names') || '{}'); $('#nameIn').value = s.n || ''; $('#placeIn').value = s.p || ''; $('#name2In').value = s.n2 || ''; $('#place2In').value = s.p2 || ''; } catch (_) {}
+}
+// names for a hunt on this phone (same screen, or against the computer)
+function readNames() {
+  NAMES[0] = myName();
+  NAMES[1] = cfg.opp === 'cpu' ? { full: 'Lord Corvin', short: 'Corvin' } : mkName($('#name2In').value, $('#place2In').value, 'Corvin');
+  saveNames();
+}
 function mkPlayer(id) {
   const home = id ? W - 130 : 130;
   return {
@@ -477,7 +545,7 @@ function showBanner(text, life, then, big) { emitFx({ k: 'ban', t: text, l: life
 function nextTurn() {
   turn = 1 - turn; turnLocked = false; turnArrow = null;
   wind = clamp(wind + rand(-70, 70), -140, 140);
-  if (!banner) showBanner(players[turn].S.name + ' draws', 0.9);
+  if (!banner) showBanner(NAMES[turn].full + ' draws', 0.9);
   if (cpuOn() && turn === 1) { cpuS.phase = 'walk'; cpuS.tx = rand(players[1].minX, players[1].maxX); cpuS.wait = 0.8; }
 }
 function winHunt(o) {
@@ -491,8 +559,8 @@ function stepArrow(a, dt) {
   a.px = a.x; a.py = a.y;
   a.vx += wind * dt; a.vy += GRAV * dt; a.x += a.vx * dt; a.y += a.vy * dt;
   let ev = null; a.hitObs = null;
-  if (a.x < 6) { a.x = 6; a.vx = Math.abs(a.vx) * .75; ev = 'bounce'; }
-  else if (a.x > W - 6) { a.x = W - 6; a.vx = -Math.abs(a.vx) * .75; ev = 'bounce'; }
+  // no walls: an arrow that leaves the screen simply flies away
+  if (a.x < XL - 150 || a.x > XR + 150 || a.y > YB + 200) { a.dead = true; return 'gone'; }
   for (const o of obstacles) {
     if (a.x > o.x && a.x < o.x + o.w && a.y > o.y && a.y < o.y + o.h) {
       if (a.px <= o.x) { a.x = o.x - .5; a.vx = -Math.abs(a.vx) * .8; }
@@ -504,7 +572,7 @@ function stepArrow(a, dt) {
       break;
     }
   }
-  const gy = groundY(a.x);
+  const gy = groundY(clamp(a.x, 0, W)); // past the field's ends the ground carries on level
   if (a.y >= gy) { a.y = gy; ev = 'ground'; }
   return ev;
 }
@@ -525,10 +593,14 @@ function fire(p, dx, dy, pow) {
 function hitHunter(p, a) {
   const la = p.facing === 1 ? a.ang : Math.PI - a.ang;
   p.lodged = [{ lx: (a.x - p.x) * p.facing / CS, ly: (a.y - p.y) / CS, ang: la, stain: 5, fl: a.owner }];
-  p.daze = 3; p.drag = null; p.hold = null;
+  // an arrow that already brought down a bird knocks the hunter out for twice as long
+  const withBird = !!a.bird, daze = withBird ? 6 : 3;
+  p.daze = daze; p.drag = null; p.hold = null;
   const sp = Math.hypot(a.vx, a.vy) || 1, self = a.owner === p.id;
-  const lines = self ? ['Shot by his own arrow!'] : ['Knocked flat!', 'Pinned like a pheasant!', 'Down he goes!', 'Wrong quarry!'];
-  emitFx({ k: 'hit', p: p.id, x: Math.round(a.x), y: Math.round(a.y), vx: +(a.vx / sp).toFixed(2), vy: +(a.vy / sp).toFixed(2), t: lines[Math.floor(Math.random() * lines.length)] });
+  const lines = withBird ? ['Bird AND hunter! Double daze!', 'Two quarries, one arrow!']
+    : self ? ['Shot by his own arrow!'] : ['Knocked flat!', 'Pinned like a pheasant!', 'Down he goes!', 'Wrong quarry!'];
+  emitFx({ k: 'hit', p: p.id, d: daze, x: Math.round(a.x), y: Math.round(a.y), vx: +(a.vx / sp).toFixed(2), vy: +(a.vy / sp).toFixed(2), t: lines[Math.floor(Math.random() * lines.length)] });
+  if (withBird) feathers(a.x, a.y, 18, a.bird.t);
 }
 
 /* ---------------- effects (run on every client) ---------------- */
@@ -555,24 +627,32 @@ function fx(e) {
     case 'stk': (e.g ? sfx.ground : sfx.wood)(); sparks(e.x, e.y - 12, 8, cfg.setting === 'winter' ? ['#e6eaee', '#b9c1c8'] : ['#4a3f2e', '#2f2a20'], 140, 'chip'); break;
     case 'bhit': {
       const x = num(e.x), y = num(e.y), left = clamp(num(e.h, 1), 0, 9);
-      feathers(x, y, 10, e.t); spray(x, y, 12, 0, 1, 200, 1.2); sfx.squawk();
+      feathers(x, y, 10, e.t); spray(x, y, 12, 0, 1, 200, 1.2); sfx.squawk(e.t, false);
       popText(x, y - 60, left === 1 ? 'Wounded, one more arrow' : `Wounded, ${left} more arrows`);
       break;
     }
     case 'bird': {
       const x = num(e.x), y = num(e.y), s = e.s ? 1 : 0;
-      feathers(x, y, 26, e.t); spray(x, y, 24, 0, 1, 280, 1.2); sfx.squawk(); shake = Math.max(shake, 4);
-      popText(x, y - 60, `+${num(e.p, 1) | 0}  ${STYLE[s].short}`, '#e2c47a');
+      feathers(x, y, 26, e.t); spray(x, y, 24, 0, 1, 280, 1.2); sfx.squawk(e.t, true); shake = Math.max(shake, 4);
+      popText(x, y - 60, `+${num(e.p, 1) | 0}  ${NAMES[s].short}`, '#e2c47a');
       break;
     }
     case 'hit': {
       const p = players[e.p]; if (!p) break;
       const x = num(e.x), y = num(e.y), dx = num(e.vx, 1), dy = num(e.vy, 0);
-      p.hurt = 0.6; p.daze = Math.max(p.daze, 2.9);
+      p.hurt = 0.6; p.daze = Math.max(p.daze, clamp(num(e.d, 3), 1, 7) - .1);
       spray(x, y, 30, dx, dy, 420, .45); spray(x, y, 10, -dx, -dy - .3, 220, .6);
       for (let i = 0; i < 3; i++) { const gx = x + dx * rand(40, 140); addDecal(gx, groundY(gx) + rand(1, 8), rand(5, 11), BLOOD[i % 4], null); }
       sfx.flesh(); sfx.angry(); shake = 10; hitStop = .12; redFlash = .3;
       popText(p.x, p.y - 250, String(e.t || '').slice(0, 40));
+      break;
+    }
+    case 'clk': // two arrows met in the air
+      sfx.clack(); sparks(num(e.x), num(e.y), 10, ['#fff2c8', '#ffcf7a', '#d8d0c0']); break;
+    case 'combo': { // more than one bird on a single arrow
+      const n = clamp(num(e.n, 2) | 0, 2, 9), x = num(e.x), y = num(e.y);
+      sfx.combo(); shake = Math.max(shake, 6);
+      popText(x, y - 120, `${['', '', 'Two', 'Three', 'Four', 'Five'][n] || n} birds, one arrow!  +${num(e.b) | 0} bonus`, '#ffd76a');
       break;
     }
     case 'up': {
@@ -767,7 +847,7 @@ function netUnavailable() {
 // "Send the code on WhatsApp": a link that opens the game and joins this duel
 const GAME_URL = 'https://thespectrumtechengine.com/archer-duel/';
 function inviteDuel() {
-  const text = `🏹 I challenge you to a duel in Archer Duel: The King's Hunt! Tap to take the field (code ${NET.code}):\n${GAME_URL}?duel=${NET.code}`;
+  const text = `🏹 ${NAMES[0].full} challenges you to a bird hunt in Archer Duel: The King's Hunt! Tap to take the field (code ${NET.code}):\n${GAME_URL}?duel=${NET.code}`;
   if (navigator.share) { navigator.share({ text }).catch(() => {}); return; }
   const wa = 'https://wa.me/?text=' + encodeURIComponent(text);
   if (!window.open(wa, '_blank')) location.href = wa;
@@ -784,10 +864,10 @@ async function renderLobby(peers) {
     const c = q.presence.cfg || {};
     const row = document.createElement('div'); row.className = 'chal';
     const left = document.createElement('div');
-    const who = (q.by && names[q.by] && names[q.by].name) || 'A challenger';
-    left.textContent = `${who} calls a hunt`;
+    const who = cleanTxt(q.presence.nm, 40) || (q.by && names[q.by] && names[q.by].name) || 'A challenger';
+    left.textContent = `${who} calls a bird hunt`;
     const sm = document.createElement('small');
-    const tn = { flat: 'flat ground', hill: 'a hill', ravine: 'a ravine', high: 'high ground', broken: 'broken ground' }[c.terrain] || 'the field';
+    const tn = { flat: 'the meadow', hill: 'the mountain', ravine: 'the bridge', high: 'the beach', broken: 'the forest' }[c.terrain] || 'the field';
     sm.textContent = `${c.mode === 'live' ? 'Open combat' : 'Measured turns'}, first to ${num(c.target, 25) | 0}, ${num(c.n, 0) | 0} obstacles, ${tn}. Code ${q.presence.open}`;
     left.appendChild(sm);
     const b = document.createElement('button'); b.className = 'big sm'; b.textContent = 'Accept';
@@ -808,9 +888,10 @@ async function hostDuel() {
   } catch (e) { $('#onlineNote').textContent = 'The challenge could not be opened. Try again in a moment.'; return; }
   role = 'host'; NET.code = code; NET.guestPeer = ''; evtSeq = 0; evts = [];
   wins[0] = wins[1] = 0; matchNo = 0;
+  NAMES[0] = myName(); NAMES[1] = { full: 'A challenger', short: 'Challenger' }; saveNames();
   NET.myPeer = myPeerIn(NET.room);
-  NET.room.presence({ role: 'host', guest: null, s: null }).catch(() => {});
-  NET.lobby.presence({ open: code, cfg: { mode: cfg.mode, n: cfg.n, terrain: cfg.terrain, target: cfg.target } }).catch(() => {});
+  NET.room.presence({ role: 'host', guest: null, s: null, nm: NAMES[0].full }).catch(() => {});
+  NET.lobby.presence({ open: code, nm: NAMES[0].full, cfg: { mode: cfg.mode, n: cfg.n, terrain: cfg.terrain, target: cfg.target } }).catch(() => {});
   NET.unsub = NET.room.onPeers(ch => hostPeers(ch.peers), () => netLost('The connection to the duel was lost.'));
   state = 'waiting';
   showWait('Awaiting a challenger', code, 'Send your opponent the code on WhatsApp, or they can choose Online and accept your challenge. Anyone else who joins will watch.');
@@ -822,8 +903,8 @@ function hostPeers(peers) {
   if (NET.guestPeer && !g) {
     NET.guestPeer = ''; NET.room.presence({ guest: null }).catch(() => {});
     state = 'waiting'; players = []; arrows = [];
-    NET.lobby.presence({ open: NET.code, cfg: { mode: cfg.mode, n: cfg.n, terrain: cfg.terrain, target: cfg.target } }).catch(() => {});
-    showWait('Lord Corvin has fled the field', NET.code, 'Your opponent left. Wait here for a new challenger, or leave.');
+    NET.lobby.presence({ open: NET.code, nm: NAMES[0].full, cfg: { mode: cfg.mode, n: cfg.n, terrain: cfg.terrain, target: cfg.target } }).catch(() => {});
+    showWait(`${NAMES[1].full} has fled the field`, NET.code, 'Your opponent left. Wait here for a new challenger, or leave.');
     $('#hudBtns').hidden = true;
     return;
   }
@@ -831,6 +912,7 @@ function hostPeers(peers) {
     const c = peers.find(q => !q.isMe && q.kind === 'viewer' && q.presence && q.presence.role === 'challenger');
     if (c) {
       NET.guestPeer = c.peer;
+      NAMES[1] = nameFrom(c.presence.nm, 'Corvin');
       const inp = c.presence.in || {};
       NET.lastF = num(inp.f, 0); NET.lastRe = num(inp.re, 0);
       NET.room.presence({ guest: c.peer }).catch(() => {});
@@ -847,7 +929,8 @@ async function joinDuel(code) {
   catch (e) { $('#onlineNote').textContent = 'That duel could not be joined. Check the code and try again.'; return; }
   role = 'spec'; NET.code = code; NET.hostPeer = ''; NET.fireSeq = 0; NET.fv = null; NET.re = 0; NET.lastEvt = -1; NET.lastSnap = null; NET.joinAt = performance.now(); NET.hostGoneAt = 0;
   NET.myPeer = myPeerIn(NET.room);
-  NET.room.presence({ role: 'challenger', in: null }).catch(() => {});
+  NAMES[1] = myName(); saveNames();
+  NET.room.presence({ role: 'challenger', in: null, nm: NAMES[1].full }).catch(() => {});
   state = 'joining';
   showWait('Seeking the duel', code, 'Looking for the challenger who opened this duel.');
 }
@@ -866,12 +949,12 @@ function hostPublish() {
   const now = performance.now(); if (now - NET.pubAt < 45) return; NET.pubAt = now;
   const L = l => [l.lx, l.ly, l.ang, l.fl];
   const s = {
-    st: state, md: cfg.mode, n: cfg.n, tr: cfg.terrain, se: cfg.setting, sd: seed, gt: +gameT.toFixed(2), tg: cfg.target,
+    st: state, md: cfg.mode, n: cfg.n, tr: cfg.terrain, se: cfg.setting, sd: seed, gt: +gameT.toFixed(2), tg: cfg.target, nm: [NAMES[0].full, NAMES[1].full],
     w: Math.round(wind), tn: turn, tl: turnLocked ? 1 : 0, it: +Math.max(0, introT).toFixed(2), wn: [wins[0], wins[1]], wr: winner, mn: matchNo,
     sc: [scores[0], scores[1]], dn: [downed[0], downed[1]], lv: level, lk: levelKills,
     p: players.map(p => [Math.round(p.x), +p.aim.toFixed(3), +p.cool.toFixed(2), packDrag(p), +p.daze.toFixed(1), p.lodged.map(l => [Math.round(l.lx), Math.round(l.ly), +l.ang.toFixed(2), l.fl])]),
     b: birds.slice(0, 6).map(b => [b.id, BKEYS.indexOf(b.t), Math.round(b.x), Math.round(b.y), Math.round(b.vx), Math.round(b.vy), b.hp, b.lodged.slice(0, 4).map(L)]),
-    a: arrows.filter(a => !a.dead).slice(-12).map(a => [Math.round(a.x), Math.round(a.y), +a.ang.toFixed(2), Math.round(a.vx), Math.round(a.vy), a.owner, a.stuck ? 1 : 0, +a.st.toFixed(1), a.bird ? [BKEYS.indexOf(a.bird.t), a.bird.lodged.slice(0, 4).map(L)] : 0]),
+    a: arrows.filter(a => !a.dead).slice(-12).map(a => [Math.round(a.x), Math.round(a.y), +a.ang.toFixed(2), Math.round(a.vx), Math.round(a.vy), a.owner, a.stuck ? 1 : 0, +a.st.toFixed(1), a.bird ? [BKEYS.indexOf(a.bird.t), a.bird.lodged.slice(0, 4).map(L)] : 0, (a.more || []).slice(0, 3).map(t => BKEYS.indexOf(t))]),
     e: evts,
   };
   NET.room.presence({ s }).catch(() => {});
@@ -908,7 +991,7 @@ function guestSync() {
   const now = performance.now();
   if (!host) {
     if (!NET.hostPeer && now - NET.joinAt > 7000) return netLost('No duel was found with that code.');
-    if (NET.hostPeer) { if (!NET.hostGoneAt) NET.hostGoneAt = now; else if (now - NET.hostGoneAt > 2500) return netLost('Sir Aldric has left the field.'); }
+    if (NET.hostPeer) { if (!NET.hostGoneAt) NET.hostGoneAt = now; else if (now - NET.hostGoneAt > 2500) return netLost(`${NAMES[0].full} has left the field.`); }
     return;
   }
   NET.hostGoneAt = 0; NET.hostPeer = host.peer;
@@ -929,6 +1012,7 @@ function applySnap(s, prev) {
     buildLevel(); players = [mkPlayer(0), mkPlayer(1)]; parts = []; decals = []; texts = []; birds = [];
   }
   cfg.target = clamp(num(s.tg, 25) | 0, 1, 999);
+  if (Array.isArray(s.nm)) { NAMES[0] = nameFrom(s.nm[0], 'Aldric'); if (role !== 'guest') NAMES[1] = nameFrom(s.nm[1], 'Corvin'); }
   const prevState = state;
   state = ['play','ko','over'].includes(s.st) ? s.st : state;
   wind = num(s.w); turn = s.tn ? 1 : 0; turnLocked = !!s.tl; introT = num(s.it); gameT = num(s.gt);
@@ -944,7 +1028,7 @@ function applySnap(s, prev) {
     if (!(mine && p.drag)) p.aim = num(d[1], p.aim);
     p.cool = num(d[2]);
     if (!mine) p.drag = Array.isArray(d[3]) ? { remote: true, sx: 0, sy: 0, cx: -num(d[3][0]), cy: -num(d[3][1]) } : null;
-    p.daze = clamp(num(d[4]), 0, 5);
+    p.daze = clamp(num(d[4]), 0, 7);
     if (mine && p.daze > 0) p.drag = null;
     if (Array.isArray(d[5])) p.lodged = d[5].slice(0, 3).map((l, j) => ({ ...unpackL(l), stain: p.lodged[j] ? p.lodged[j].stain : 5 }));
   });
@@ -965,6 +1049,7 @@ function applySnap(s, prev) {
   if (Array.isArray(s.a)) arrows = s.a.slice(0, 16).map(a => ({
     x: num(a[0]), y: num(a[1]), ang: num(a[2]), vx: num(a[3]), vy: num(a[4]), owner: a[5] ? 1 : 0, stuck: !!a[6], st: num(a[7]), dead: false, remote: true,
     bird: Array.isArray(a[8]) ? { t: BKEYS[num(a[8][0]) | 0] || 'raven', lodged: Array.isArray(a[8][1]) ? a[8][1].slice(0, 4).map(unpackL) : [] } : null,
+    more: Array.isArray(a[9]) ? a[9].slice(0, 3).map(i => BKEYS[num(i) | 0] || 'raven') : [],
   }));
   if (Array.isArray(s.e)) {
     const maxI = s.e.reduce((m, e) => Math.max(m, num(e && e.i)), 0);
@@ -977,7 +1062,7 @@ function applySnap(s, prev) {
 }
 
 function updateNetTag() {
-  $('#netTag').textContent = role === 'host' ? `Online hunt ${NET.code}. You are Sir Aldric.` : role === 'guest' ? `Online hunt ${NET.code}. You are Lord Corvin.` : role === 'spec' ? `Watching hunt ${NET.code}` : '';
+  $('#netTag').textContent = role === 'host' ? `Online hunt ${NET.code}. You are ${NAMES[0].full}.` : role === 'guest' ? `Online hunt ${NET.code}. You are ${NAMES[1].full}.` : role === 'spec' ? `Watching hunt ${NET.code}` : '';
 }
 
 function birdCeil() { let m = H; for (let x = 0; x <= W; x += 100) m = Math.min(m, groundY(x)); for (const o of obstacles) m = Math.min(m, o.y); return Math.max(260, Math.min(560, m - 90)); }
@@ -1051,7 +1136,7 @@ function birdVisuals(dt) {
   }
 }
 function arrowVsBirds(a) {
-  if (a.bird || a.stuck || a.dead) return;
+  if (a.stuck || a.dead) return; // an arrow already carrying a bird can still take more
   for (let bi = 0; bi < birds.length; bi++) {
     const b = birds[bi], T = BT[b.t];
     if (Math.hypot(a.x - b.x, a.y - b.y) >= T.r) continue;
@@ -1062,9 +1147,13 @@ function arrowVsBirds(a) {
       emitFx({ k: 'bhit', x: Math.round(a.x), y: Math.round(a.y), t: b.t, s: a.owner, h: b.hp });
     } else {
       birds.splice(bi, 1);
-      a.bird = { t: b.t, lodged: b.lodged.slice(0, 5) }; a.vx *= T.mass; a.vy *= T.mass;
-      scores[a.owner] += T.pts; downed[a.owner]++; levelKills++;
-      emitFx({ k: 'bird', x: Math.round(a.x), y: Math.round(a.y), t: b.t, s: a.owner, p: T.pts });
+      // the 2nd bird on one arrow scores double, the 3rd triple, and so on
+      const n = (a.kills || 0) + 1, bonus = T.pts * (n - 1); a.kills = n;
+      if (!a.bird) a.bird = { t: b.t, lodged: b.lodged.slice(0, 5) }; else (a.more = a.more || []).push(b.t);
+      a.vx *= T.mass; a.vy *= T.mass;
+      scores[a.owner] += T.pts + bonus; downed[a.owner]++; levelKills++;
+      emitFx({ k: 'bird', x: Math.round(a.x), y: Math.round(a.y), t: b.t, s: a.owner, p: T.pts + bonus });
+      if (n > 1) emitFx({ k: 'combo', n, b: bonus, x: Math.round(a.x), y: Math.round(a.y) });
       spawnT = Math.max(spawnT, level === 1 ? 1.5 : .9);
       if (state === 'play' && scores[a.owner] >= cfg.target) winHunt(a.owner);
       else if (state === 'play' && levelKills >= levelNeed(level)) {
@@ -1167,13 +1256,14 @@ function simArrows(dt) {
     if (a.dead) continue;
     a.age += dt;
     if (a.stuck) { a.st += dt; if (a.st > (a.bird ? 9 : 7)) a.dead = true; continue; }
+    a.f0x = a.x; a.f0y = a.y; a.clk = Math.max(0, (a.clk || 0) - dt);
     for (let i = 0; i < 4 && !a.stuck && !a.dead; i++) {
       const ev = stepArrow(a, dt / 4);
       if (ev === 'bounce') emitFx({ k: 'bnc', x: Math.round(a.x), y: Math.round(a.y), m: a.hitObs && a.hitObs.mat === 'wood' ? 'w' : 's' });
       else if (ev === 'ground' || ev === 'rest') { a.stuck = true; if (ev === 'ground') a.y += 14; emitFx({ k: 'stk', x: Math.round(a.x), y: Math.round(a.y), g: ev === 'ground' ? 1 : 0 }); }
       if (Math.hypot(a.vx, a.vy) > 30 && !a.stuck) a.ang = Math.atan2(a.vy, a.vx);
       arrowVsBirds(a);
-      if (a.bird || a.dead || a.stuck) continue;
+      if (a.dead || a.stuck) continue; // arrows carrying a bird can still strike a hunter
       for (const p of players) {
         if (p.daze > 0) continue;
         if (p.id === a.owner && a.age < 0.3) continue;
@@ -1182,16 +1272,38 @@ function simArrows(dt) {
     }
     if (a.age > 12) a.dead = true;
   }
+  arrowsRicochet();
   arrows = arrows.filter(a => !a.dead || a === turnArrow);
   if (arrows.filter(a => a.stuck).length > 12) { const s = arrows.find(a => a.stuck); if (s) s.dead = true; }
   if (cfg.mode === 'turn' && state === 'play' && turnLocked && turnArrow && (turnArrow.dead || turnArrow.stuck)) {
     turnDelay -= dt; if (turnDelay <= 0) { arrows = arrows.filter(a => !a.dead); nextTurn(); }
   }
 }
+// Arrows in flight bounce off each other, like they do off pillars and planks.
+// Uses the closest the two arrows came during this frame, so fast arrows can't pass through each other.
+function arrowsRicochet() {
+  const fly = arrows.filter(a => !a.dead && !a.stuck && a.f0x !== undefined);
+  for (let i = 0; i < fly.length; i++) for (let j = i + 1; j < fly.length; j++) {
+    const A = fly[i], B = fly[j]; if (A.clk > 0 || B.clk > 0) continue;
+    const rx = B.f0x - A.f0x, ry = B.f0y - A.f0y, dx = (B.x - B.f0x) - (A.x - A.f0x), dy = (B.y - B.f0y) - (A.y - A.f0y);
+    const dd = dx * dx + dy * dy, t = dd ? clamp(-(rx * dx + ry * dy) / dd, 0, 1) : 0;
+    const cx = rx + dx * t, cy = ry + dy * t, d = Math.hypot(cx, cy);
+    if (d > 24) continue;
+    const nx = d ? cx / d : 1, ny = d ? cy / d : 0;
+    const va = A.vx * nx + A.vy * ny, vb = B.vx * nx + B.vy * ny;
+    if (va - vb <= 0 && d > 6) continue; // already moving apart
+    // swap the speed along the line between them (equal arrows), losing a little
+    A.vx += (vb - va) * nx * .9; A.vy += (vb - va) * ny * .9; B.vx += (va - vb) * nx * .9; B.vy += (va - vb) * ny * .9;
+    const mx = A.f0x + (A.x - A.f0x) * t, my = A.f0y + (A.y - A.f0y) * t;
+    A.x = mx - nx * 14; A.y = my - ny * 14; B.x = mx + nx * 14; B.y = my + ny * 14;
+    A.ang = Math.atan2(A.vy, A.vx); B.ang = Math.atan2(B.vy, B.vx); A.clk = B.clk = .2;
+    emitFx({ k: 'clk', x: Math.round(mx), y: Math.round(my) });
+  }
+}
 function endScreen() {
-  const w = STYLE[winner], l = 1 - winner;
-  $('#verdict').textContent = `${w.name} takes the King's hunt, ${scores[winner]} points to ${scores[l]}.`;
-  $('#tally').textContent = `Birds downed: Aldric ${downed[0]}, Corvin ${downed[1]}. Hunts won: Aldric ${roman(wins[0])}, Corvin ${roman(wins[1])}.`;
+  const l = 1 - winner, a = NAMES[0].short, b = NAMES[1].short;
+  $('#verdict').textContent = `${NAMES[winner].full} takes the King's hunt, ${scores[winner]} points to ${scores[l]}.`;
+  $('#tally').textContent = `Birds downed: ${a} ${downed[0]}, ${b} ${downed[1]}. Hunts won: ${a} ${roman(wins[0])}, ${b} ${roman(wins[1])}.`;
   const again = $('#againBtn'); again.hidden = role === 'spec'; again.disabled = false;
   again.textContent = role === 'guest' ? 'Call for another hunt' : 'Another hunt';
   $('#overNote').textContent = role === 'host' || role === 'guest' ? 'Either of you may call the next hunt.' : role === 'spec' ? 'You are watching this hunt.' : '';
@@ -1214,59 +1326,161 @@ function text(t, x, y, font, c, align = 'center', shadow = true) {
 }
 
 /* ---------------- backdrop (cached) ---------------- */
+/* ---------------- scenery: 5 places x 3 times of day ----------------
+   The place (cfg.terrain) sets the landscape; the setting (dusk / winter / night) sets the sky
+   and tints every colour, and winter lays snow on the ground. */
 const PAL = {
-  dusk:   { sky: ['#1d2025','#3b3c3d','#6d5c48','#8b6d4c'], glow: 'rgba(230,170,110,.55)', orb: 'rgba(245,205,160,.55)', ridge: '#3a3a36', castle: '#232420', hill: '#2b2d26', g1: '#3a3526', g2: '#1d1a12', grass: '#4b4a2c', lip: '#2a2819', tree: '#141412', win: 'rgba(255,170,80,.75)' },
-  winter: { sky: ['#56606b','#7f8a96','#adb5bc','#cfd3d6'], glow: 'rgba(255,255,255,.35)', orb: 'rgba(255,255,255,.5)', ridge: '#7c8690', castle: '#4a5058', hill: '#96a0a9', g1: '#dde2e6', g2: '#a9b1b8', grass: '#6f7568', lip: '#b9c0c6', tree: '#2a2c2e', win: 'rgba(255,190,110,.6)' },
-  night:  { sky: ['#03050a','#0a1020','#16203a','#26324f'], glow: 'rgba(170,190,230,.28)', orb: 'rgba(225,232,245,.85)', ridge: '#111620', castle: '#090c12', hill: '#141a24', g1: '#1f2633', g2: '#0a0d13', grass: '#2c3544', lip: '#0e121a', tree: '#05070a', win: 'rgba(255,175,90,.95)' },
+  dusk:   { sky: ['#343c4a','#646463','#a2805e','#cf9c68'], glow: 'rgba(255,190,120,.6)', orb: 'rgba(255,222,180,.85)', tint: '#8a5a32', amt: .14, win: 'rgba(255,170,80,.9)' },
+  winter: { sky: ['#6a7480','#939eaa','#bfc6cc','#dfe2e4'], glow: 'rgba(255,255,255,.4)', orb: 'rgba(255,255,255,.65)', tint: '#e2e8ee', amt: .26, win: 'rgba(255,190,110,.75)', snow: true },
+  night:  { sky: ['#0b1426','#1a2a48','#30476f','#4d6494'], glow: 'rgba(180,200,240,.35)', orb: 'rgba(238,242,252,.95)', tint: '#13213f', amt: .42, win: 'rgba(255,180,95,.95)' },
 };
+const LOC = {
+  flat:   { name: 'Meadow',   ridge: '#5a6650', castle: '#3a3b35', hill: '#4c5c36', tree: '#2a2a22', g1: '#6c7c40', g2: '#36421f', grass: '#8c9c4e', lip: '#46542a' },
+  hill:   { name: 'Mountain', far: '#8a95a6', far2: '#66707f', snowcap: '#f2f5f8', pine: '#2f4030', g1: '#7d7462', g2: '#3e382e', grass: '#8e8a6a', lip: '#564e40' },
+  ravine: { name: 'Bridge',   far: '#647558', far2: '#4a5a40', g1: '#7c6849', g2: '#3e3222', grass: '#748242', lip: '#4a3e2c', chasm: '#2c2721', water: '#4a86a2', plank: '#8f6e46', rope: '#cdb68e' },
+  high:   { name: 'Beach',    sea: '#4f8eaa', sea2: '#2e6d8a', far: '#6c7c86', g1: '#e4cd94', g2: '#b59664', grass: '#a4a45c', lip: '#c6a86e', ship: '#3c3631' },
+  broken: { name: 'Forest',   far: '#46624a', far2: '#33503a', near: '#24402a', trunk: '#3c2e20', g1: '#57682f', g2: '#29321a', grass: '#6c8639', lip: '#34401e', cap: '#c03c2c' },
+};
+const SNOW = { g1: '#eef2f5', g2: '#c3ccd3', grass: '#9aa08a', lip: '#d3dae0' };
+const hexRGB = h => { h = h.replace('#', ''); return [0, 2, 4].map(i => parseInt(h.substr(i, 2), 16)); };
+const mixCol = (a, b, t) => { const A = hexRGB(a), B = hexRGB(b); return `rgb(${A.map((v, i) => Math.round(v + (B[i] - v) * t)).join(',')})`; };
+
 function buildBackdrop() {
   if (!bg.width) return;
-  const c = bctx, R = seeded(7 + seed % 97), P = PAL[cfg.setting] || PAL.dusk;
+  const c = bctx, R = seeded(7 + seed % 97), P = PAL[cfg.setting] || PAL.dusk, loc = LOC[cfg.terrain] ? cfg.terrain : 'flat', L = LOC[loc];
+  const T = col => mixCol(col, P.tint, P.amt); // light every colour for the time of day
   c.setTransform(scale, 0, 0, scale, offX, offY); c.clearRect(XL, YT, XR - XL, YB - YT);
   // scenery reaches the screen edges (XL..XR, YT..YB); the ground stays level past the field's ends
   const EW = XR - XL, gY = x => groundY(clamp(x, 0, W)), more = EW / W;
+
+  // sky, stars, sun or moon
   const g = c.createLinearGradient(0, 0, 0, 930);
   P.sky.forEach((col, i) => g.addColorStop([0, .45, .8, 1][i], col));
   c.fillStyle = g; c.fillRect(XL, YT, EW, YB - YT);
   if (cfg.setting === 'night') for (let i = 0; i < 160 * more; i++) { c.fillStyle = `rgba(230,235,255,${.2 + R() * .6})`; c.fillRect(XL + R() * EW, YT + R() * (690 - YT), R() < .1 ? 2 : 1.2, R() < .1 ? 2 : 1.2); }
-  const ox = 520, oy = cfg.setting === 'night' ? 690 : 780;
-  const sg = c.createRadialGradient(ox, oy, 10, ox, oy, 300); sg.addColorStop(0, P.glow); sg.addColorStop(1, 'rgba(0,0,0,0)');
-  c.fillStyle = sg; c.fillRect(0, 200, W, 600);
+  const ox = W * .26, oy = cfg.setting === 'night' ? 690 : 760;
+  const sg = c.createRadialGradient(ox, oy, 10, ox, oy, 320); sg.addColorStop(0, P.glow); sg.addColorStop(1, 'rgba(0,0,0,0)');
+  c.fillStyle = sg; c.fillRect(ox - 330, oy - 330, 660, 660);
   c.beginPath(); c.arc(ox, oy, 38, 0, Math.PI * 2); c.fillStyle = P.orb; c.fill();
-  // far ridge
-  c.beginPath(); c.moveTo(XL, 850);
-  for (let x = XL; x <= XR + 40; x += 40) c.lineTo(x, 820 - Math.sin(x * .005 + 1) * 34 - R() * 12);
-  c.lineTo(XR + 40, YB); c.lineTo(XL, YB); c.closePath(); c.fillStyle = P.ridge; c.fill();
-  // castle
-  c.save(); c.translate(330, 170);
-  c.beginPath(); c.moveTo(1040, 680); c.quadraticCurveTo(1190, 560, 1380, 680); c.closePath(); c.fillStyle = P.ridge; c.fill();
-  c.fillStyle = P.castle;
-  const tw = (x, y, w, h) => { c.fillRect(x, y, w, h); for (let i = 0; i < w; i += 8) c.fillRect(x + i, y - 7, 5, 7); };
-  tw(1115, 560, 160, 80); tw(1095, 505, 36, 135); tw(1255, 515, 32, 125); tw(1172, 470, 42, 170);
-  c.beginPath(); c.moveTo(1168, 470); c.lineTo(1193, 428); c.lineTo(1218, 470); c.fill();
-  c.fillStyle = P.win; [[1188, 500], [1108, 535], [1266, 545], [1150, 595], [1225, 598]].forEach(([x, y]) => c.fillRect(x, y, 4, 7));
-  c.restore();
-  // near hills
-  c.beginPath(); c.moveTo(XL, YB);
-  for (let x = XL; x <= XR + 30; x += 30) c.lineTo(x, 885 - Math.sin(x * .004) * 26 - Math.sin(x * .017) * 8);
-  c.lineTo(XR + 30, YB); c.closePath(); c.fillStyle = P.hill; c.fill();
-  // dead tree
-  c.strokeStyle = P.tree; c.lineCap = 'round';
-  const br = (x, y, a, l, w) => { if (w < 1) return; const x2 = x + Math.cos(a) * l, y2 = y + Math.sin(a) * l; c.lineWidth = w; c.beginPath(); c.moveTo(x, y); c.lineTo(x2, y2); c.stroke(); br(x2, y2, a - .45 - R() * .2, l * .72, w * .66); br(x2, y2, a + .35 + R() * .2, l * .68, w * .62); };
-  br(310, Math.min(groundY(310), 930) + 6, -Math.PI / 2 - .08, 72, 9);
-  // terrain
+
+  // shared drawing helpers
+  const band = (base, amp, f1, f2, col, step = 30) => { // a rolling line of hills from base down to the bottom
+    c.beginPath(); c.moveTo(XL, YB);
+    for (let x = XL; x <= XR + step; x += step) c.lineTo(x, base - Math.sin(x * f1 + 1) * amp - Math.sin(x * f2) * amp * .3 - R() * amp * .15);
+    c.lineTo(XR + step, YB); c.closePath(); c.fillStyle = col; c.fill();
+  };
+  const pine = (x, y, h, col) => {
+    c.fillStyle = col; c.fillRect(x - h * .04, y - h * .2, h * .08, h * .2);
+    for (let k = 0; k < 3; k++) { const w = h * (.42 - k * .1), top = y - h * (.35 + k * .22); c.beginPath(); c.moveTo(x - w, top + h * .3); c.lineTo(x, top - h * .12); c.lineTo(x + w, top + h * .3); c.closePath(); c.fill(); }
+  };
+  const oak = (x, y, h, col, trunk) => {
+    c.fillStyle = trunk; c.fillRect(x - h * .05, y - h * .45, h * .1, h * .45);
+    c.fillStyle = col; for (const [dx, dy, r] of [[0, -.62, .3], [-.22, -.5, .22], [.22, -.5, .22], [0, -.42, .24]]) { c.beginPath(); c.arc(x + dx * h, y + dy * h, r * h, 0, 7); c.fill(); }
+  };
+
+  // the far and middle scenery for each place
+  if (loc === 'flat') {
+    band(830, 30, .005, .013, T(L.ridge), 40);
+    // castle
+    c.save(); c.translate(330, 170);
+    c.beginPath(); c.moveTo(1040, 680); c.quadraticCurveTo(1190, 560, 1380, 680); c.closePath(); c.fillStyle = T(L.ridge); c.fill();
+    c.fillStyle = T(L.castle);
+    const tw = (x, y, w, h) => { c.fillRect(x, y, w, h); for (let i = 0; i < w; i += 8) c.fillRect(x + i, y - 7, 5, 7); };
+    tw(1115, 560, 160, 80); tw(1095, 505, 36, 135); tw(1255, 515, 32, 125); tw(1172, 470, 42, 170);
+    c.beginPath(); c.moveTo(1168, 470); c.lineTo(1193, 428); c.lineTo(1218, 470); c.fill();
+    c.fillStyle = P.win; [[1188, 500], [1108, 535], [1266, 545], [1150, 595], [1225, 598]].forEach(([x, y]) => c.fillRect(x, y, 4, 7));
+    c.restore();
+    band(890, 24, .004, .017, T(L.hill));
+    // the old dead tree
+    c.strokeStyle = T(L.tree); c.lineCap = 'round';
+    const br = (x, y, a, l, w) => { if (w < 1) return; const x2 = x + Math.cos(a) * l, y2 = y + Math.sin(a) * l; c.lineWidth = w; c.beginPath(); c.moveTo(x, y); c.lineTo(x2, y2); c.stroke(); br(x2, y2, a - .45 - R() * .2, l * .72, w * .66); br(x2, y2, a + .35 + R() * .2, l * .68, w * .62); };
+    br(310, Math.min(groundY(310), 930) + 6, -Math.PI / 2 - .08, 72, 9);
+  } else if (loc === 'hill') {
+    // two ranges of snow-capped peaks, then pines
+    for (const [base, hmin, hmax, colr, n] of [[860, 260, 420, L.far, 7], [900, 160, 280, L.far2, 9]]) {
+      const step = EW / n;
+      for (let i = -1; i <= n; i++) {
+        const px = XL + (i + .5) * step + (R() - .5) * step * .5, h = hmin + R() * (hmax - hmin), w = step * (.8 + R() * .5);
+        c.beginPath(); c.moveTo(px - w, base); c.lineTo(px - w * .15, base - h * .92); c.lineTo(px, base - h); c.lineTo(px + w * .2, base - h * .9); c.lineTo(px + w, base); c.closePath(); c.fillStyle = T(colr); c.fill();
+        c.beginPath(); c.moveTo(px - w * .26, base - h * .72); c.lineTo(px - w * .15, base - h * .92); c.lineTo(px, base - h); c.lineTo(px + w * .2, base - h * .9);
+        c.lineTo(px + w * .28, base - h * .7); c.lineTo(px + w * .1, base - h * .78); c.lineTo(px - w * .06, base - h * .7); c.closePath(); c.fillStyle = T(L.snowcap); c.fill();
+      }
+      c.fillStyle = T(colr); c.fillRect(XL, base - 1, EW, YB - base + 1);
+    }
+    for (let x = XL; x < XR; x += 34 + R() * 40) pine(x, 930 + R() * 20, 70 + R() * 60, T(L.pine));
+  } else if (loc === 'ravine') {
+    // distant wooded hills
+    band(800, 50, .004, .011, T(L.far), 40);
+    band(880, 30, .006, .015, T(L.far2));
+    for (let x = XL; x < XR; x += 60 + R() * 70) pine(x, 905 + R() * 15, 55 + R() * 40, T(L.far2 === L.far ? L.far : '#2f3f2c'));
+  } else if (loc === 'high') {
+    // the sea, a headland with a lighthouse, a ship on the horizon
+    const hz = 790, sea = c.createLinearGradient(0, hz, 0, 1000);
+    sea.addColorStop(0, T(L.sea)); sea.addColorStop(1, T(L.sea2));
+    c.fillStyle = sea; c.fillRect(XL, hz, EW, YB - hz);
+    c.fillStyle = 'rgba(255,255,255,.35)'; c.fillRect(XL, hz, EW, 2);
+    const hx = W * .82; c.beginPath(); c.moveTo(hx - 220, hz + 2); c.quadraticCurveTo(hx - 80, hz - 90, hx + 60, hz - 70); c.lineTo(hx + 220, hz + 2); c.closePath(); c.fillStyle = T(L.far); c.fill();
+    c.fillStyle = T('#e8e2d6'); c.fillRect(hx - 10, hz - 150, 22, 80); c.fillStyle = T('#a33a2a'); c.fillRect(hx - 10, hz - 130, 22, 12); c.fillRect(hx - 10, hz - 100, 22, 12);
+    c.fillStyle = P.win; c.fillRect(hx - 8, hz - 166, 18, 14);
+    const sx = W * .45; c.fillStyle = T(L.ship); c.beginPath(); c.moveTo(sx - 50, hz - 6); c.lineTo(sx + 50, hz - 6); c.lineTo(sx + 36, hz + 6); c.lineTo(sx - 38, hz + 6); c.closePath(); c.fill();
+    c.fillRect(sx - 2, hz - 70, 4, 64); c.beginPath(); c.moveTo(sx + 3, hz - 66); c.quadraticCurveTo(sx + 34, hz - 40, sx + 3, hz - 12); c.closePath(); c.fill(); c.beginPath(); c.moveTo(sx - 3, hz - 58); c.quadraticCurveTo(sx - 28, hz - 36, sx - 3, hz - 14); c.closePath(); c.fill();
+    c.strokeStyle = 'rgba(255,255,255,.45)'; c.lineWidth = 2;
+    for (let i = 0; i < 70 * more; i++) { const x = XL + R() * EW, y = hz + 20 + R() * 220, w = 14 + R() * 30; c.beginPath(); c.moveTo(x, y); c.quadraticCurveTo(x + w / 2, y - 4, x + w, y); c.stroke(); }
+  } else {
+    // the old forest: three rows of trees, each nearer and darker
+    band(860, 40, .005, .013, T(L.far), 40);
+    for (let x = XL; x < XR; x += 40 + R() * 40) (R() < .5 ? pine : oak)(x, 880, 120 + R() * 90, T(L.far), T(L.far));
+    for (let x = XL; x < XR; x += 55 + R() * 55) (R() < .5 ? pine : oak)(x, 920, 150 + R() * 110, T(L.far2), T(L.trunk));
+    for (const fx of [W * .08, W * .2, W * .8, W * .93]) oak(fx, Math.min(gY(fx), 960) + 10, 230 + R() * 60, T(L.near), T(L.trunk));
+  }
+
+  // the ground
+  const G = P.snow ? SNOW : L;
   let top = H; for (let x = 0; x <= W; x += 16) top = Math.min(top, groundY(x));
   const tp = new Path2D(); tp.moveTo(XL, YB); for (let x = XL; x <= XR + 8; x += 8) tp.lineTo(x, gY(x)); tp.lineTo(XR + 8, YB); tp.closePath();
-  const gg = c.createLinearGradient(0, top, 0, H); gg.addColorStop(0, P.g1); gg.addColorStop(1, P.g2);
+  const gg = c.createLinearGradient(0, top, 0, H); gg.addColorStop(0, T(G.g1)); gg.addColorStop(1, T(G.g2));
   c.fillStyle = gg; c.fill(tp);
   c.save(); c.clip(tp);
-  for (let i = 0; i < 1200 * more; i++) { const x = XL + R() * EW, y = gY(x) + R() * (YB - gY(x)); c.fillStyle = R() < .5 ? 'rgba(0,0,0,.2)' : 'rgba(140,120,90,.15)'; c.fillRect(x, y, 2 + R() * 3, 1 + R() * 2); }
-  if (cfg.setting !== 'winter') for (let i = 0; i < 26 * more; i++) { const x = XL + R() * EW, y = gY(x) + 22 + R() * 70; c.beginPath(); c.ellipse(x, y, 20 + R() * 40, 3 + R() * 4, 0, 0, Math.PI * 2); c.fillStyle = cfg.setting === 'night' ? 'rgba(150,170,210,.14)' : 'rgba(90,95,100,.22)'; c.fill(); }
-  else for (let i = 0; i < 40 * more; i++) { const x = XL + R() * EW, y = gY(x) + 14 + R() * 90; c.beginPath(); c.ellipse(x, y, 10 + R() * 30, 2 + R() * 3, 0, 0, Math.PI * 2); c.fillStyle = 'rgba(80,70,55,.25)'; c.fill(); }
+  for (let i = 0; i < 1200 * more; i++) { const x = XL + R() * EW, y = gY(x) + R() * (YB - gY(x)); c.fillStyle = R() < .5 ? 'rgba(0,0,0,.14)' : 'rgba(255,240,210,.12)'; c.fillRect(x, y, 2 + R() * 3, 1 + R() * 2); }
+  if (!P.snow) for (let i = 0; i < 26 * more; i++) { const x = XL + R() * EW, y = gY(x) + 22 + R() * 70; c.beginPath(); c.ellipse(x, y, 20 + R() * 40, 3 + R() * 4, 0, 0, Math.PI * 2); c.fillStyle = loc === 'high' ? 'rgba(255,250,235,.25)' : 'rgba(90,95,100,.18)'; c.fill(); }
+  else for (let i = 0; i < 40 * more; i++) { const x = XL + R() * EW, y = gY(x) + 14 + R() * 90; c.beginPath(); c.ellipse(x, y, 10 + R() * 30, 2 + R() * 3, 0, 0, Math.PI * 2); c.fillStyle = 'rgba(80,70,55,.18)'; c.fill(); }
   c.restore();
-  c.strokeStyle = P.grass; c.lineWidth = 2;
-  for (let x = XL; x < XR; x += cfg.setting === 'winter' ? 13 : 5) { if (cfg.setting === 'winter' && R() < .5) continue; const h = 4 + R() * 10, gy = gY(x); c.beginPath(); c.moveTo(x, gy + 2); c.lineTo(x + R() * 4 - 2, gy - h); c.stroke(); }
-  c.beginPath(); for (let x = XL; x <= XR + 8; x += 8) c.lineTo(x, gY(x) + 1); c.lineWidth = 3; c.strokeStyle = P.lip; c.stroke();
+  c.strokeStyle = T(G.grass); c.lineWidth = 2;
+  const sparse = P.snow || loc === 'high' || loc === 'hill';
+  for (let x = XL; x < XR; x += sparse ? 13 : 5) { if (sparse && R() < .5) continue; const h = 4 + R() * (loc === 'high' ? 16 : 10), gy = gY(x); c.beginPath(); c.moveTo(x, gy + 2); c.lineTo(x + R() * 4 - 2, gy - h); c.stroke(); }
+  c.beginPath(); for (let x = XL; x <= XR + 8; x += 8) c.lineTo(x, gY(x) + 1); c.lineWidth = 3; c.strokeStyle = T(G.lip); c.stroke();
+
+  // close-up details for each place
+  if (loc === 'hill') { // boulders
+    for (let i = 0; i < 9 * more; i++) { const x = XL + R() * EW, y = gY(x); c.beginPath(); c.ellipse(x, y - 4, 14 + R() * 18, 9 + R() * 8, 0, Math.PI, 0); c.fillStyle = T('#6d675c'); c.fill(); }
+  } else if (loc === 'broken') { // toadstools
+    for (let i = 0; i < 14 * more; i++) { const x = XL + R() * EW, y = gY(x) + 2, s = 5 + R() * 6; c.fillStyle = T('#e8dcc4'); c.fillRect(x - s * .25, y - s * 1.3, s * .5, s * 1.3); c.beginPath(); c.ellipse(x, y - s * 1.3, s, s * .65, 0, Math.PI, 0); c.fillStyle = T(L.cap); c.fill(); c.fillStyle = 'rgba(255,255,255,.8)'; c.fillRect(x - s * .4, y - s * 1.7, 2, 2); c.fillRect(x + s * .2, y - s * 1.55, 2, 2); }
+  } else if (loc === 'high') { // shells and pebbles on the sand
+    for (let i = 0; i < 30 * more; i++) { const x = XL + R() * EW, y = gY(x) + 6 + R() * 40; c.beginPath(); c.ellipse(x, y, 3 + R() * 3, 2, 0, 0, 7); c.fillStyle = R() < .5 ? T('#f4ece0') : T('#8a8070'); c.fill(); }
+  } else if (loc === 'ravine') drawBridge(c, L, T);
+}
+
+// The gorge under the bridge, the river far below, and the rope bridge itself
+function drawBridge(c, L, T) {
+  const x0 = CX - BRIDGE, x1 = CX + BRIDGE, cliff = GB - 70;
+  c.save();
+  const gp = new Path2D(); gp.moveTo(x0, cliff); for (let x = x0; x <= x1; x += 8) gp.lineTo(x, groundY(x) + 6); gp.lineTo(x1, YB + 10); gp.lineTo(x0, YB + 10); gp.closePath();
+  c.clip(gp);
+  const ch = c.createLinearGradient(0, cliff, 0, YB); ch.addColorStop(0, T(L.chasm)); ch.addColorStop(1, T('#110f0c'));
+  c.fillStyle = ch; c.fillRect(x0, cliff, x1 - x0, YB - cliff + 10);
+  const ry = Math.min(YB, H) - 26; c.fillStyle = T(L.water); c.fillRect(x0, ry, x1 - x0, 60);
+  c.strokeStyle = 'rgba(235,248,255,.55)'; c.lineWidth = 2; for (let x = x0 + 10; x < x1; x += 46) { c.beginPath(); c.moveTo(x, ry + 10); c.lineTo(x + 18, ry + 10); c.stroke(); }
+  c.restore();
+  // rough cliff faces
+  c.fillStyle = T('#5a4a36');
+  for (const [ex, dir] of [[x0, -1], [x1, 1]]) { c.beginPath(); c.moveTo(ex, cliff); for (let y = cliff; y <= YB; y += 22) c.lineTo(ex + dir * (6 + Math.sin(y * .07) * 6), y); c.lineTo(ex, YB); c.closePath(); c.fill(); }
+  // planks along the sagging deck
+  for (let x = x0 + 4; x < x1; x += 17) { const y = groundY(x + 6); c.fillStyle = T(L.plank); c.fillRect(x, y - 2, 13, 9); c.fillStyle = 'rgba(0,0,0,.25)'; c.fillRect(x, y + 5, 13, 2); }
+  // posts, hand ropes and hangers
+  c.fillStyle = T('#5a3e24'); for (const px of [x0 - 6, x1 - 6]) c.fillRect(px, cliff - 62, 12, 64);
+  const rope = x => groundY(x) - 54 + 16 * (1 - Math.pow((x - CX) / BRIDGE, 2)) * -0.4;
+  c.strokeStyle = T(L.rope); c.lineWidth = 3; c.beginPath(); for (let x = x0; x <= x1; x += 10) c[x === x0 ? 'moveTo' : 'lineTo'](x, rope(x)); c.stroke();
+  c.lineWidth = 1.5; for (let x = x0 + 30; x < x1; x += 36) { c.beginPath(); c.moveTo(x, rope(x)); c.lineTo(x, groundY(x)); c.stroke(); }
 }
 
 /* ---------------- dynamic scenery ---------------- */
@@ -1276,7 +1490,7 @@ function drawSky() {
     ctx.fillStyle = night ? 'rgba(20,26,40,.45)' : winter ? 'rgba(120,128,138,.35)' : 'rgba(22,24,28,.42)';
     for (let i = 0; i < 5; i++) { ell(c.x + i * 50 * c.s, c.y + Math.sin(i * 1.7) * 12, 80 * c.s, 26 * c.s); ctx.fill(); }
   }
-  for (const [px, py] of [[1523, 598], [1443, 668]]) {
+  if (cfg.terrain === 'flat') for (const [px, py] of [[1523, 598], [1443, 668]]) { // castle flags (Meadow only)
     line(px, py, px, py - 26, 2, '#141412');
     const L = 10 + Math.abs(windShown) / 140 * 22, d = windShown >= 0 ? 1 : -1;
     ctx.beginPath(); ctx.moveTo(px, py - 26); ctx.quadraticCurveTo(px + d * L * .5, py - 26 + Math.sin(time * 6 + px) * 3, px + d * L, py - 22);
@@ -1415,6 +1629,12 @@ function drawArrowWorld(a) {
     const T = BT[a.bird.t] || BT.raven;
     ctx.save(); ctx.translate(-22 - T.r * .35, 0); if (Math.cos(ang) < 0) ctx.scale(1, -1);
     drawBird(a.bird.t, 0, 0, 1, 0, true, T.sc * .9, a.bird.lodged); ctx.restore();
+    // any more birds on the same arrow sit further back along the shaft
+    (a.more || []).slice(0, 3).forEach((t, k) => {
+      const T2 = BT[t] || BT.raven;
+      ctx.save(); ctx.translate(-22 - T.r * .35 - (k + 1) * (T2.r * .9 + 18), 0); if (Math.cos(ang) < 0) ctx.scale(1, -1);
+      drawBird(t, 0, 0, 1, 0, true, T2.sc * .8, []); ctx.restore();
+    });
     arrowShape(-10, 10, STYLE[a.owner].fletch, 0.9);
   }
   ctx.restore();
@@ -1554,12 +1774,15 @@ function drop(x, y, s, full) {
 }
 function drawHUD() {
   for (const p of players) {
-    const left = p.id === 0, w = 300, bx = left ? 24 : W - 24 - w, S = p.S;
+    const left = p.id === 0, w = 380, bx = left ? 24 : W - 24 - w, S = p.S;
     ctx.fillStyle = 'rgba(14,10,7,.72)'; ctx.fillRect(bx, 18, w, 84);
     ctx.strokeStyle = 'rgba(168,135,74,.6)'; ctx.lineWidth = 1.5; ctx.strokeRect(bx + 4, 22, w - 8, 76);
     ctx.fillStyle = S.tabard; ctx.fillRect(left ? bx + 4 : bx + w - 10, 22, 6, 76);
     const tx = left ? bx + 22 : bx + w - 22, al = left ? 'left' : 'right', ox = left ? bx + w - 22 : bx + 22, oal = left ? 'right' : 'left';
-    text(S.name, tx, 44, `28px ${SC}`, '#e9dfca', al);
+    // long names like "Sir Bob of Trim Town" shrink to fit the box
+    let fs = 28; ctx.font = `${fs}px ${SC}`;
+    while (fs > 15 && ctx.measureText(NAMES[p.id].full).width > w - 110) { fs -= 1; ctx.font = `${fs}px ${SC}`; }
+    text(NAMES[p.id].full, tx, 44, `${fs}px ${SC}`, '#e9dfca', al);
     let sub = `${downed[p.id]} ${downed[p.id] === 1 ? 'bird' : 'birds'}`;
     if (p.daze > 0) sub = 'knocked flat';
     else if (cfg.mode === 'turn' && state === 'play' && turn === p.id) sub = 'to draw';
@@ -1635,6 +1858,8 @@ function seg(id, cb) {
   el.addEventListener('click', e => { const b = e.target.closest('button'); if (!b || b.disabled) return; el.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b)); cb(b.dataset.v); sfx.tick(); });
 }
 function previewLevel() { if (state !== 'menu') return; seed = 11; buildLevel(); }
+loadNames();
+for (const id of ['#nameIn', '#placeIn', '#name2In', '#place2In']) $(id).addEventListener('change', saveNames);
 seg('#modeSeg', v => cfg.mode = v);
 seg('#tgSeg', v => cfg.target = +v);
 seg('#nSeg', v => { cfg.n = +v; previewLevel(); });
@@ -1642,6 +1867,7 @@ seg('#terrSeg', v => { cfg.terrain = v; previewLevel(); });
 seg('#setSeg', v => { cfg.setting = v; previewLevel(); });
 seg('#oppSeg', v => {
   cfg.opp = v; const on = v === 'online';
+  $('#name2Lbl').hidden = $('#name2Box').hidden = v !== 'local'; // a second name only for two on one screen
   $('#onlineBox').hidden = !on; $('#howTxt').hidden = on;
   $('#startBtn').textContent = on ? 'Open a challenge' : 'Take the field';
   $('#startBtn').disabled = on && !NET.lobby;
@@ -1668,6 +1894,7 @@ matchMedia('(orientation: portrait)').addEventListener('change', startIfSideways
 $('#startBtn').onclick = () => {
   ac();
   if (cfg.opp === 'online') { hostDuel(); return; }
+  readNames();
   whenSideways(() => { role = 'local'; wins[0] = wins[1] = 0; matchNo = 0; startMatch(); updateNetTag(); });
 };
 $('#turnBack').onclick = () => { pendingStart = null; toMenu(); };

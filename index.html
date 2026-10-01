@@ -108,15 +108,69 @@ input{font:calc(1.5 * var(--u)) 'IM Fell English', Georgia, serif;padding:calc(.
 .mini:hover{background:rgba(60,40,25,.85)}
 .netTag{font-style:italic;font-size:calc(1.2 * var(--u));color:rgba(233,223,202,.75)}
 .slain.won{font-size:calc(6.5 * var(--u))}
+/* ---------- Phones: menus upright, the hunt itself sideways ---------- */
 #turn{display:none}
 @media (orientation: portrait) and (pointer: coarse){
-  #turn{display:flex;position:fixed;inset:0;z-index:50;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;text-align:center;
+  /* the "turn your phone" screen only appears once every menu is closed, i.e. during the hunt */
+  body:has(#menu[hidden]):has(#wait[hidden]):has(#over[hidden]) #turn{display:flex}
+  #turn{position:fixed;inset:0;z-index:50;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;text-align:center;
     background:radial-gradient(ellipse at 50% 40%, #2a211a, #050403 75%);color:var(--parch)}
   #turn .ph{font-size:64px;animation:tilt 2.4s ease-in-out infinite}
   #turn .t{font-family:'UnifrakturMaguntia', serif;font-size:40px;color:#c9b27a;margin:0}
   #turn p{font-size:20px;margin:0;max-width:280px;line-height:1.4}
+  #turn .back{font:18px 'IM Fell English SC', Georgia, serif;letter-spacing:.06em;margin-top:18px;padding:12px 22px;min-height:48px;
+    background:transparent;color:var(--parch);border:2px solid #6b5a42;cursor:pointer}
   @keyframes tilt{0%,25%{transform:rotate(0)}50%,75%{transform:rotate(-90deg)}100%{transform:rotate(0)}}
   @media (prefers-reduced-motion: reduce){#turn .ph{animation:none;transform:rotate(-90deg)}}
+
+  /* menus fill the upright screen with big, thumb-sized controls */
+  .panel{align-items:stretch;background:rgba(8,5,3,.35)}
+  .parch{width:100%;height:100%;max-height:none;justify-content:flex-start;gap:12px;
+    padding:calc(22px + env(safe-area-inset-top,0px)) 18px calc(26px + env(safe-area-inset-bottom,0px));
+    box-shadow:inset 0 0 40px rgba(90,55,20,.55)}
+  .title{font-size:52px}
+  .sub{font-size:20px;margin:-4px 0 0}
+  .decree{font-size:16px;max-width:none}
+  .opts{grid-template-columns:1fr;gap:4px;width:100%;margin:2px 0}
+  .lbl{text-align:left;font-size:17px;margin-top:8px}
+  .seg{display:grid;grid-template-columns:repeat(auto-fit,minmax(78px,1fr));gap:6px;border:0;width:100%;justify-self:stretch}
+  .seg button,.seg button+button{font-size:17px;padding:10px 6px;min-height:48px;min-width:0;border:2px solid #4a3220}
+  #nSeg{grid-template-columns:repeat(6,1fr)}
+  #terrSeg{grid-template-columns:repeat(3,1fr)}
+  .big{font-size:22px;padding:12px 20px;min-height:56px;width:100%;border-width:2px}
+  .big.sm{font-size:18px;min-height:50px;width:auto}
+  .how{font-size:15px;max-width:none}
+  .list{width:100%}
+  .chal{font-size:17px;padding:10px 12px;border-width:2px}
+  .chal small{font-size:14px}
+  .chal .big.sm{width:auto;min-height:44px}
+  input{font-size:22px;width:150px;padding:10px;border-width:2px}
+  .code{font-size:64px}
+  .hd{font-size:28px}
+  .seal{display:none}
+  .slain{font-size:60px}
+  .slain.won{font-size:50px}
+  .verdict{font-size:20px;max-width:none}
+  .tally{font-size:18px}
+  .row{flex-direction:column;align-items:stretch;width:100%;gap:10px}
+  .online .row{flex-direction:row;justify-content:center}
+  .parch .ste-logo{width:170px;margin-top:6px}
+}
+/* phones held sideways: everything stays reachable with a thumb */
+@media (orientation: landscape) and (pointer: coarse){
+  .mini{font-size:14px;padding:8px 14px;min-height:40px;border-width:2px}
+  .corner{gap:10px}
+  .netTag{font-size:13px}
+}
+@media (orientation: landscape) and (pointer: coarse) and (max-height: 520px){
+  .parch{width:min(94cqw, 1000px)}
+  .lbl{font-size:14px}
+  .seg button{font-size:15px;padding:7px 10px;min-height:38px}
+  .big{font-size:18px;padding:8px 20px;min-height:44px}
+  .big.sm{font-size:15px;min-height:40px}
+  .how,.decree{font-size:12.5px}
+  .chal{font-size:14px} .chal small{font-size:12px}
+  input{font-size:16px;width:110px}
 }
 .ste-logo{display:block;width:calc(18 * var(--u));height:auto;margin:.4cqh auto 0;opacity:.9}
 </style>
@@ -199,6 +253,7 @@ input{font:calc(1.5 * var(--u)) 'IM Fell English', Georgia, serif;padding:calc(.
   <div class="ph" aria-hidden="true">📱</div>
   <p class="t">Archer Duel</p>
   <p>Turn your phone on its side to take the field.</p>
+  <button class="back" id="turnBack">Back to the menu</button>
 </div>
 
 <script>
@@ -1592,16 +1647,35 @@ seg('#oppSeg', v => {
   $('#startBtn').disabled = on && !NET.lobby;
   if (on && !NET.lobby) netInit();
 });
+// Phones choose in the upright menu, then hunt sideways: a hunt started upright waits until the phone turns
+const portraitPhone = () => matchMedia('(orientation: portrait) and (pointer: coarse)').matches;
+let pendingStart = null;
+function whenSideways(fn) {
+  if (!portraitPhone()) { fn(); return; }
+  pendingStart = fn; hidePanels(); // with every menu closed, the "turn your phone" screen shows
+  // backup in case a phone doesn't report turning: check twice a second while waiting
+  const poll = setInterval(() => { if (!pendingStart) clearInterval(poll); else startIfSideways(); }, 500);
+}
+function startIfSideways() {
+  if (!pendingStart || portraitPhone()) return;
+  const fn = pendingStart; pendingStart = null;
+  setTimeout(() => { resize(); fn(); }, 150); // let the field take its new shape first
+}
+// Phones report turning in different ways, so listen for all of them
+window.addEventListener('resize', startIfSideways);
+window.addEventListener('orientationchange', () => setTimeout(startIfSideways, 200));
+matchMedia('(orientation: portrait)').addEventListener('change', startIfSideways);
 $('#startBtn').onclick = () => {
   ac();
   if (cfg.opp === 'online') { hostDuel(); return; }
-  role = 'local'; wins[0] = wins[1] = 0; matchNo = 0; startMatch(); updateNetTag();
+  whenSideways(() => { role = 'local'; wins[0] = wins[1] = 0; matchNo = 0; startMatch(); updateNetTag(); });
 };
+$('#turnBack').onclick = () => { pendingStart = null; toMenu(); };
 $('#joinBtn').onclick = () => { ac(); joinDuel($('#codeIn').value); };
 $('#codeIn').addEventListener('keydown', e => { if (e.key === 'Enter') { ac(); joinDuel($('#codeIn').value); } });
 $('#againBtn').onclick = () => {
   if (role === 'guest') { NET.re++; guestPublish(true); $('#againBtn').disabled = true; $('#againBtn').textContent = 'Called. Awaiting the field'; }
-  else startMatch();
+  else whenSideways(() => startMatch());
 };
 function toMenu() {
   netLeave();

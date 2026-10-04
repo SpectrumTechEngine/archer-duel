@@ -113,11 +113,26 @@ input{font:calc(1.5 * var(--u)) 'IM Fell English', Georgia, serif;padding:calc(.
 .namebox input{width:calc(12 * var(--u));letter-spacing:0;text-align:left}
 .namebox input#placeIn,.namebox input#place2In{width:calc(15 * var(--u))}
 .namebox[hidden],.lbl[hidden]{display:none}
+/* optional profile: password and sign in, or "My career" once signed in */
+.acct{display:flex;flex-direction:column;align-items:flex-start;gap:.4cqh;justify-self:start;text-align:left}
+.acct[hidden],.acct .out[hidden],.acct .in[hidden]{display:none}
+.acct .out,.acct .in{display:flex;flex-wrap:wrap;gap:calc(.6 * var(--u));align-items:center}
+.acct input{width:calc(12 * var(--u));letter-spacing:0;text-align:left}
+.acctMsg{font-style:italic;font-size:calc(1.1 * var(--u));color:#5a4330;max-width:calc(44 * var(--u))}
+input.locked{background:rgba(74,50,32,.12);border-style:dashed}
+.linkish{display:block;margin-top:.3cqh;background:none;border:0;padding:0;font:italic calc(1.1 * var(--u)) 'IM Fell English', Georgia, serif;color:var(--blood);text-decoration:underline;cursor:pointer;text-align:left}
+/* career cards */
+.cards{display:flex;gap:calc(2 * var(--u));justify-content:center;flex-wrap:wrap;width:100%}
+.card{flex:1 1 calc(26 * var(--u));max-width:calc(34 * var(--u));border:calc(.15 * var(--u)) solid rgba(74,50,32,.55);padding:calc(1 * var(--u)) calc(1.4 * var(--u));background:rgba(255,250,235,.25);text-align:left}
+.card .hd{font-size:calc(1.9 * var(--u));text-align:center;margin-bottom:.6cqh}
+.card dl{display:grid;grid-template-columns:1fr auto;gap:.3cqh calc(1 * var(--u));margin:0;font-size:calc(1.3 * var(--u))}
+.card dt{color:#4a3524} .card dd{margin:0;text-align:right;font-family:'IM Fell English SC', Georgia, serif}
+.card .how{margin-top:.6cqh;text-align:center}
 /* ---------- Phones: menus upright, the hunt itself sideways ---------- */
 #turn{display:none}
 @media (orientation: portrait) and (pointer: coarse){
   /* the "turn your phone" screen only appears once every menu is closed, i.e. during the hunt */
-  body:has(#menu[hidden]):has(#wait[hidden]):has(#over[hidden]) #turn{display:flex}
+  body:has(#menu[hidden]):has(#wait[hidden]):has(#over[hidden]):has(#records[hidden]) #turn{display:flex}
   #turn{position:fixed;inset:0;z-index:50;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;text-align:center;
     background:radial-gradient(ellipse at 50% 40%, #2a211a, #050403 75%);color:var(--parch)}
   #turn .ph{font-size:64px;animation:tilt 2.4s ease-in-out infinite}
@@ -136,7 +151,7 @@ input{font:calc(1.5 * var(--u)) 'IM Fell English', Georgia, serif;padding:calc(.
   .title{font-size:52px}
   .sub{font-size:20px;margin:-4px 0 0}
   .decree{font-size:16px;max-width:none}
-  .opts{grid-template-columns:1fr;gap:4px;width:100%;margin:2px 0}
+  .opts{grid-template-columns:minmax(0,1fr);gap:4px;width:100%;margin:2px 0}
   .lbl{text-align:left;font-size:17px;margin-top:8px}
   .seg{display:grid;grid-template-columns:repeat(auto-fit,minmax(78px,1fr));gap:6px;border:0;width:100%;justify-self:stretch}
   .seg button,.seg button+button{font-size:17px;padding:10px 6px;min-height:48px;min-width:0;border:2px solid #4a3220}
@@ -144,6 +159,16 @@ input{font:calc(1.5 * var(--u)) 'IM Fell English', Georgia, serif;padding:calc(.
   .namebox{width:100%;gap:8px;font-size:18px;justify-self:stretch}
   .namebox input,.namebox input#placeIn,.namebox input#place2In{flex:1;min-width:0;width:auto;font-size:18px;padding:10px;min-height:46px}
   #terrSeg{grid-template-columns:repeat(3,1fr)}
+  .acct{width:100%;justify-self:stretch;gap:6px}
+  .acct .out,.acct .in{width:100%;gap:8px}
+  .acct input{flex:1 1 100%;width:auto;min-width:0;font-size:18px;padding:10px;min-height:46px}
+  .acct .big.sm{flex:1;min-height:46px}
+  .acctMsg{font-size:14px;max-width:none}
+  .linkish{font-size:15px;padding:6px 0}
+  .cards{flex-direction:column;gap:12px}
+  .card{max-width:none;padding:12px 14px;border-width:2px}
+  .card .hd{font-size:22px}
+  .card dl{font-size:16px;gap:4px 10px}
   .big{font-size:22px;padding:12px 20px;min-height:56px;width:100%;border-width:2px}
   .big.sm{font-size:18px;min-height:50px;width:auto}
   .how{font-size:15px;max-width:none}
@@ -178,6 +203,7 @@ input{font:calc(1.5 * var(--u)) 'IM Fell English', Georgia, serif;padding:calc(.
   .how,.decree{font-size:12.5px}
   .chal{font-size:14px} .chal small{font-size:12px}
   input{font-size:16px;width:110px}
+  .acctMsg,.linkish{font-size:12px} .card dl{font-size:13px} .card .hd{font-size:17px}
 }
 .ste-logo{display:block;width:calc(18 * var(--u));height:auto;margin:.4cqh auto 0;opacity:.9}
 </style>
@@ -202,8 +228,20 @@ input{font:calc(1.5 * var(--u)) 'IM Fell English', Georgia, serif;padding:calc(.
       <div class="opts">
         <span class="lbl">Your name</span>
         <div class="namebox">Sir <input id="nameIn" maxlength="14" placeholder="Aldric" autocomplete="off" aria-label="Your name"> of <input id="placeIn" maxlength="18" placeholder="Trim Town" autocomplete="off" aria-label="Where you hail from"></div>
+        <span class="lbl">Your career</span>
+        <div class="acct" id="acct1">
+          <div class="out"><input type="password" id="pw1" placeholder="Password" autocomplete="current-password" aria-label="Your password"><button class="big alt sm" data-a="in">Sign in</button><button class="big alt sm" data-a="make">Make a profile</button></div>
+          <div class="in" hidden><button class="big alt sm" data-a="rec">My career</button><button class="big alt sm" data-a="out">Sign out</button></div>
+          <small class="acctMsg">Optional. Sign in with your name and a password to keep your career.</small>
+        </div>
         <span class="lbl" id="name2Lbl">Second hunter</span>
         <div class="namebox" id="name2Box">Sir <input id="name2In" maxlength="14" placeholder="Corvin" autocomplete="off" aria-label="Second hunter's name"> of <input id="place2In" maxlength="18" placeholder="Blackmoor" autocomplete="off" aria-label="Where the second hunter hails from"></div>
+        <span class="lbl" id="acct2Lbl">Their career</span>
+        <div class="acct" id="acct2">
+          <div class="out"><input type="password" id="pw2" placeholder="Password" autocomplete="off" aria-label="Second hunter's password"><button class="big alt sm" data-a="in">Sign in</button><button class="big alt sm" data-a="make">Make a profile</button></div>
+          <div class="in" hidden><button class="big alt sm" data-a="rec">Their career</button><button class="big alt sm" data-a="out">Sign out</button></div>
+          <small class="acctMsg">Optional, for the second hunter on this phone.</small>
+        </div>
         <span class="lbl">The rules</span>
         <div class="seg" id="modeSeg"><button data-v="turn" aria-pressed="true">Measured turns</button><button data-v="live" aria-pressed="false">Open combat</button></div>
         <span class="lbl">First to</span>
@@ -226,7 +264,7 @@ input{font:calc(1.5 * var(--u)) 'IM Fell English', Georgia, serif;padding:calc(.
           <button class="big alt sm" id="joinBtn">Join by code</button>
         </div>
       </div>
-      <p class="how" id="howTxt">Press anywhere, drag back and release to loose an arrow. In open combat on one screen, each hunter draws on their own half. Step between your stakes with A and D, ← and →, or the arrows at your feet. The arrow that brings a bird down takes all its points: raven 1, pigeon 2, swallow 3, pheasant 5, goose 8, eagle 12. Pheasants, geese and eagles take two, three and four arrows. Five lone ravens open the hunt, then each level brings new birds and wilder flight. Strike the other hunter and he's knocked flat for three seconds.</p>
+      <p class="how" id="howTxt">Press anywhere, drag back and release to loose an arrow. In open combat on one screen, each hunter draws on their own half. Step between your stakes with A and D, ← and →, or the arrows at your feet. The arrow that brings a bird down takes all its points: raven 1, pigeon 2, swallow 3, pheasant 5, goose 8, eagle 12, and the rare Phoenix 20 (its fiery trail burns any arrow that touches it). Pheasants, geese and eagles take two, three and four arrows. Five lone ravens open the hunt, then each level brings new birds and wilder flight. Strike the other hunter and he's knocked flat for three seconds; every second time he's struck, a shield takes his next two arrows.</p>
       <img class="ste-logo" src="data:image/webp;base64,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" alt="Created By The Spectrum Tech Engine">
       <div class="seal" aria-hidden="true">✠</div>
     </div>
@@ -250,6 +288,7 @@ input{font:calc(1.5 * var(--u)) 'IM Fell English', Georgia, serif;padding:calc(.
       <p class="tally" id="tally"></p>
       <div class="row">
         <button class="big" id="againBtn">Another hunt</button>
+        <button class="big alt" id="recordsBtn" hidden>Hunters' records</button>
         <button class="big alt" id="toMenuBtn">Leave the field</button>
       </div>
       <p class="how" id="overNote"></p>
@@ -257,6 +296,15 @@ input{font:calc(1.5 * var(--u)) 'IM Fell English', Georgia, serif;padding:calc(.
       <div class="seal" aria-hidden="true">✠</div>
     </div>
   </div>
+  <!-- careers of one or both hunters -->
+  <div class="panel" id="records" hidden>
+    <div class="parch">
+      <p class="hd">The royal records</p>
+      <div class="cards" id="recCards"></div>
+      <button class="big alt" id="recBack">Back</button>
+    </div>
+  </div>
+
 </div>
 
 <!-- Shown on phones held upright: the hunt needs the phone on its side -->
@@ -305,8 +353,11 @@ let players = [], arrows = [], parts = [], texts = [], obstacles = [], decals = 
 let wind = 0, windShown = 0, turn = 0, turnLocked = false, turnArrow = null, turnDelay = 0;
 let time = 0, shake = 0, koT = 0, winner = 0, matchNo = 0, introT = 0, liveWindT = 0, hitStop = 0, redFlash = 0;
 let banner = null, skyPath = null, builtKey = '';
-let level = 1, levelKills = 0, spawnT = 0, birdSeq = 0;
+let level = 1, levelKills = 0, spawnT = 0, birdSeq = 0, phxT = 0;
 const wins = [0, 0], keys = {}, scores = [0, 0], downed = [0, 0];
+// this hunt's feats, for each hunter's career: phoenixes, best combo, hunters hit, times hit, arrows blocked by a shield
+const newFeats = () => ({ phx: 0, combo: 0, hh: 0, th: 0, blk: 0 });
+let feats = [newFeats(), newFeats()];
 const cpuS = { phase: 'idle', t: 0, wait: 1, dir: null, pow: 0, dodgeT: 0, tx: 0 };
 const cpuOn = () => role === 'local' && cfg.opp === 'cpu';
 
@@ -318,15 +369,19 @@ const BT = {
   pheasant: { pts: 5,  hp: 2, r: 30, sc: 1.55, spd: 175, agil: .8,  mass: .6,  body: '#a2521d', wA: '#7a5a35', wB: '#8a6a40', beak: '#d8cfa6', eye: '#111', tail: 'long', head: '#1e4d3a', face: '#b31b1b', ring: '#f2f2f2', flap: 12, wl: .9, prize: true },
   goose:    { pts: 8,  hp: 3, r: 36, sc: 1.95, spd: 125, agil: .6,  mass: .45, body: '#8b8174', wA: '#6f675c', wB: '#7d7468', beak: '#2a2a2a', eye: '#111', tail: 'wedge', neck: 16, head: '#1a1a1a', cheek: '#f0ece4', belly: '#cfc6b6', flap: 6, wl: 1.3, prize: true },
   eagle:    { pts: 12, hp: 4, r: 40, sc: 2.15, spd: 195, agil: 1.3, mass: .4,  body: '#3a2a1c', wA: '#2b1f14', wB: '#33251a', beak: '#e0b030', eye: '#e0b030', tail: 'fan', head: '#b88a3a', flap: 5, wl: 1.55, prize: true },
+  // the wild card: rare, darts straight across very fast, and its fiery trail burns arrows
+  phoenix:  { pts: 20, hp: 1, r: 34, sc: 1.9,  spd: 1150, agil: 0, mass: .5,  body: '#d9481c', wA: '#ff7a1a', wB: '#ffb02e', beak: '#ffe08a', eye: '#fff6d0', tail: 'long', head: '#ffc93a', belly: '#ffd36a', flap: 16, wl: 1.4, wild: true },
 };
 const BKEYS = Object.keys(BT);
-const BNAME = { raven: 'raven', pigeon: 'pigeon', swallow: 'swallow', pheasant: 'pheasant', goose: 'goose', eagle: 'eagle' };
+const BNAME = { raven: 'raven', pigeon: 'pigeon', swallow: 'swallow', pheasant: 'pheasant', goose: 'goose', eagle: 'eagle', phoenix: 'phoenix' };
+const PHX_TRAIL = 1.1;  // seconds a stretch of the Phoenix's trail stays alight
+const BURN_TIME = 6.5;  // seconds a burnt arrow keeps burning on the ground
 function levelPool(l) { const p = [['raven', 4]]; if (l >= 2) p.push(['pigeon', 3], ['pheasant', 1.2]); if (l >= 3) p.push(['swallow', 2.2], ['goose', .9]); if (l >= 4) p.push(['eagle', .7]); return p; }
 const maxBirds = l => l <= 1 ? 1 : l <= 3 ? 2 : l <= 5 ? 3 : 4;
 const levelNeed = l => l <= 1 ? 5 : 5 + l;
 const spdMul = l => Math.min(2, 1 + .12 * (l - 1));
 const dodgeP = l => Math.min(.6, .12 * (l - 1));
-const LEVEL_TEXT = { 2: 'Pigeons and pheasant take wing', 3: 'Swallows and geese join the sky', 4: 'An eagle hunts above the field' };
+const LEVEL_TEXT = { 2: 'Pigeons, pheasant, and maybe a Phoenix', 3: 'Swallows and geese join the sky', 4: 'An eagle hunts above the field' };
 
 /* ---------------- terrain ---------------- */
 let bumpR = [0, 0, 0];
@@ -444,7 +499,7 @@ const sfx = {
   // a cartoon "SQUAA!": the pitch leaps up then tumbles down, with a warble; each bird has its own voice
   squawk: (t, big) => {
     if (muted) return; const a = ac(); if (!a) return;
-    const base = { raven: 520, pigeon: 650, swallow: 1150, pheasant: 720, goose: 360, eagle: 950 }[t] || 600;
+    const base = { raven: 520, pigeon: 650, swallow: 1150, pheasant: 720, goose: 360, eagle: 950, phoenix: 1350 }[t] || 600;
     const now = a.currentTime, f = base * (0.9 + Math.random() * 0.25), d = big ? .55 : .32;
     const o = a.createOscillator(), o2 = a.createOscillator(), lfo = a.createOscillator(), lg = a.createGain(), bp = a.createBiquadFilter(), g = a.createGain();
     o.type = 'sawtooth'; o2.type = 'square';
@@ -458,6 +513,18 @@ const sfx = {
     noise(.08, .14, 0, 2600, 'bandpass'); // puff of feathers
   },
   clack: () => { tone(1900, .05, 'square', .07, 1200); noise(.04, .2, 0, 4000, 'highpass'); },
+  // the Phoenix: a rising roar of wind and fire with a shriek on top, then crackling
+  phoenix: () => {
+    noise(1.4, .32, 0, 500, 'bandpass'); noise(1.1, .18, .15, 1800, 'bandpass');
+    tone(1500, .5, 'sawtooth', .05, 2600, .1); tone(2200, .6, 'triangle', .04, 1300, .45);
+    for (let i = 0; i < 9; i++) noise(.03, .16, .2 + i * .12 + Math.random() * .06, 3000, 'highpass');
+  },
+  // an arrow catches fire: a soft "fwoomp" and sizzle
+  ignite: () => { noise(.45, .35, 0, 700, 'bandpass'); tone(160, .35, 'sine', .14, 70); noise(.6, .1, .1, 4200, 'highpass'); },
+  // a shield appears, takes an arrow, or breaks
+  shieldUp: () => { [392, 587, 784].forEach((f, i) => tone(f, .35, 'triangle', .09, null, i * .06)); noise(.2, .1, 0, 3000, 'highpass'); },
+  thunk: () => { tone(140, .14, 'triangle', .4, 70); noise(.09, .3, 0, 700); tone(900, .08, 'square', .03, 500); },
+  shatter: () => { noise(.35, .4, 0, 1200, 'bandpass'); tone(220, .3, 'sawtooth', .08, 60); for (let i = 0; i < 4; i++) tone(1200 + Math.random() * 900, .07, 'triangle', .05, 600, .05 + i * .06); },
   combo: () => [523, 659, 784, 1047, 1319].forEach((f, i) => tone(f, .22, 'triangle', .12, null, i * .07)),
   angry: () => { for (let i = 0; i < 5; i++) tone(130 + Math.random() * 70, .11, 'sawtooth', .07, 85, i * .09); },
   grunt: () => tone(120, .22, 'sawtooth', .06, 80),
@@ -470,6 +537,7 @@ const sfx = {
     else if (t === 'pheasant') { tone(900, .1, 'square', .025, 700); tone(850, .12, 'square', .025, 650, .12); }
     else if (t === 'goose') { tone(330, .22, 'sawtooth', .05, 300); tone(310, .25, 'sawtooth', .05, 280, .3); }
     else if (t === 'eagle') tone(1800, .55, 'sine', .04, 1100);
+    else if (t === 'phoenix') { tone(2000, .3, 'triangle', .05, 2800); noise(.3, .1, 0, 2500, 'bandpass'); }
   },
 };
 
@@ -510,6 +578,7 @@ function mkPlayer(id) {
     minX: home - STEP, maxX: home + STEP,
     daze: 0, hurt: 0, cool: 0, drag: null, shootT: 0, fall: 0, bleedT: 0, hold: null,
     aim: id ? Math.PI + 0.7 : -0.7, walk: 0, lodged: [],
+    hits: 0, shield: 0, sArrows: [], shieldT: 0, // every 2nd time a hunter is hit, a shield takes the next 2 arrows
   };
 }
 function handAt(p, ang) { return { x: p.x + (p.facing * 6 + Math.cos(ang) * 34) * CS, y: p.y + (-122 + Math.sin(ang) * 34) * CS }; }
@@ -531,8 +600,9 @@ function startMatch() {
   seed = Math.floor(Math.random() * 1e6) + 1;
   buildLevel();
   players = [mkPlayer(0), mkPlayer(1)];
-  arrows = []; parts = []; texts = []; decals = []; birds = [];
+  arrows = []; parts = []; texts = []; decals = []; birds = []; flames = [];
   scores[0] = scores[1] = 0; downed[0] = downed[1] = 0; level = 1; levelKills = 0; spawnT = 2.6;
+  feats = [newFeats(), newFeats()]; phxT = rand(45, 90);
   turn = matchNo % 2; turnLocked = false; turnArrow = null;
   wind = rand(-100, 100); liveWindT = 6; gameT = 0;
   state = 'play'; introT = 2.2; shake = 0; redFlash = 0;
@@ -577,6 +647,8 @@ function stepArrow(a, dt) {
   return ev;
 }
 function hitTest(p, x, y) { const dx = (x - p.x) / (25 * CS), dy = (y - (p.y - 80 * CS)) / (80 * CS); return dx * dx + dy * dy < 1; }
+// the shield sticks out in front of the body, so it catches arrows a little before they reach the hunter
+function shieldTest(p, x, y) { const lx = (x - p.x) * p.facing / CS, ly = (y - p.y) / CS; return Math.abs(lx - SHIELD.x) < SHIELD.w + 4 && Math.abs(ly - SHIELD.y) < SHIELD.h + 4; }
 function dragVec(p) {
   const d = p.drag; if (!d) return null;
   const dx = d.sx - d.cx, dy = d.sy - d.cy, len = Math.hypot(dx, dy), pull = Math.min(len, MAXPULL);
@@ -601,6 +673,21 @@ function hitHunter(p, a) {
     : self ? ['Shot by his own arrow!'] : ['Knocked flat!', 'Pinned like a pheasant!', 'Down he goes!', 'Wrong quarry!'];
   emitFx({ k: 'hit', p: p.id, d: daze, x: Math.round(a.x), y: Math.round(a.y), vx: +(a.vx / sp).toFixed(2), vy: +(a.vy / sp).toFixed(2), t: lines[Math.floor(Math.random() * lines.length)] });
   if (withBird) feathers(a.x, a.y, 18, a.bird.t);
+  feats[p.id].th++; if (!self) feats[a.owner].hh++;
+  // every second hit raises a shield that takes the next two arrows
+  p.hits++;
+  if (p.hits % 2 === 0) { p.shield = 2; p.sArrows = []; emitFx({ k: 'shup', p: p.id }); }
+}
+// The shield covers the hunter's chest, on the side they face (in the hunter's own drawing units)
+const SHIELD = { x: 20, y: -94, w: 31, h: 40 };
+function shieldHit(p, a) {
+  const la = p.facing === 1 ? a.ang : Math.PI - a.ang;
+  const lx = clamp((a.x - p.x) * p.facing / CS, SHIELD.x - SHIELD.w * .7, SHIELD.x + SHIELD.w * .7);
+  const ly = clamp((a.y - p.y) / CS, SHIELD.y - SHIELD.h * .7, SHIELD.y + SHIELD.h * .6);
+  p.shield--; p.sArrows.push({ lx: Math.round(lx), ly: Math.round(ly), ang: +la.toFixed(2), fl: a.owner });
+  feats[p.id].blk++;
+  emitFx({ k: p.shield > 0 ? 'shblk' : 'shbrk', p: p.id, x: Math.round(a.x), y: Math.round(a.y) });
+  if (p.shield <= 0) p.sArrows = [];
 }
 
 /* ---------------- effects (run on every client) ---------------- */
@@ -635,6 +722,10 @@ function fx(e) {
       const x = num(e.x), y = num(e.y), s = e.s ? 1 : 0;
       feathers(x, y, 26, e.t); spray(x, y, 24, 0, 1, 280, 1.2); sfx.squawk(e.t, true); shake = Math.max(shake, 4);
       popText(x, y - 60, `+${num(e.p, 1) | 0}  ${NAMES[s].short}`, '#e2c47a');
+      if (e.t === 'phoenix') {
+        sparks(x, y, 60, ['#fff2c8', '#ffd36a', '#ff7a1a', '#ff3d00'], 520); sfx.combo(); sfx.fanfare(); shake = Math.max(shake, 9);
+        popText(x, y - 130, `${NAMES[s].short} downs the PHOENIX!`, '#ffb02e');
+      }
       break;
     }
     case 'hit': {
@@ -647,6 +738,34 @@ function fx(e) {
       popText(p.x, p.y - 250, String(e.t || '').slice(0, 40));
       break;
     }
+    case 'shup': { // a shield appears
+      const p = players[e.p]; if (!p) break;
+      p.shield = 2; p.sArrows = []; p.shieldT = 1; sfx.shieldUp();
+      popText(p.x, p.y - 300, 'A shield! It will take the next two arrows', '#bfd8ff');
+      break;
+    }
+    case 'shblk': case 'shbrk': { // an arrow strikes the shield; the second one breaks it
+      const p = players[e.p], x = num(e.x), y = num(e.y);
+      sfx.thunk(); shake = Math.max(shake, 5); p && (p.shieldT = .5);
+      sparks(x, y, 10, ['#6b4a2c', '#8a6440', '#cfd6dd'], 240, 'chip');
+      if (e.k === 'shbrk') {
+        sfx.shatter();
+        if (p) {
+          const cx = p.x + SHIELD.x * p.facing * CS, cy = p.y + SHIELD.y * CS;
+          sparks(cx, cy, 26, ['#6b4a2c', '#8a6440', '#3f2a18', '#cfd6dd', p.S.tabard], 380, 'chip');
+          for (const w of (p.sArrows.length ? p.sArrows : [{ ang: -.4 }, { ang: .5 }]))
+            parts.push({ k: 'fallarrow', x: cx, y: cy, vx: rand(-90, 90), vy: rand(-260, -120), rot: (p.facing === 1 ? w.ang : Math.PI - w.ang), spin: rand(-8, 8), life: 1.6, t: 0, r: 1, c: STYLE[w.fl || 0].fletch });
+          p.shield = 0; p.sArrows = [];
+        }
+        popText(x, y - 90, 'The shield breaks!', '#bfd8ff');
+      } else popText(x, y - 90, 'Blocked! The shield holds', '#bfd8ff');
+      break;
+    }
+    case 'phx': // the Phoenix appears
+      sfx.phoenix(); popText(W / 2, H / 2 + 80, 'A PHOENIX! Worth 20 points', '#ffb02e'); break;
+    case 'burn': // an arrow flew through the Phoenix's trail
+      sfx.ignite(); sparks(num(e.x), num(e.y), 18, ['#ffd36a', '#ff7a1a', '#ff3d00', '#fff2c8'], 300);
+      popText(num(e.x), num(e.y) - 70, 'Burnt by the trail!', '#ff9a3a'); break;
     case 'clk': // two arrows met in the air
       sfx.clack(); sparks(num(e.x), num(e.y), 10, ['#fff2c8', '#ffcf7a', '#d8d0c0']); break;
     case 'combo': { // more than one bird on a single arrow
@@ -677,12 +796,12 @@ function addDecal(x, y, r, c, o) {
   decals.push({ x, y, r, c, o, ox: o ? x - o.x : 0, oy: o ? y - o.y : 0, blobs, flat: o ? .35 : .28 });
   if (decals.length > 520) decals.shift();
 }
-function popText(x, y, t, c) { if (t) texts.push({ x, y, text: t, t: 0, life: 1.8, c }); }
+function popText(x, y, t, c) { if (t) texts.push({ x: clamp(x, XL + 260, XR - 260), y, text: t, t: 0, life: 1.8, c }); } // kept clear of the screen's edges
 
 /* ---------------- CPU ---------------- */
 function cpuPlan() {
   const me = players[1];
-  const ts = birds.filter(b => b.x > 80 && b.x < W - 80);
+  const ts = birds.filter(b => b.x > 80 && b.x < W - 80 && b.t !== 'phoenix'); // the Phoenix is too quick for Lord Corvin's aim
   if (!ts.length) { cpuS.phase = 'idle'; cpuS.wait = .4; return; }
   let tb = ts[0], bs = -1e9;
   for (const b of ts) { const s = BT[b.t].pts * 1.5 / BT[b.t].hp - Math.abs(b.x - me.x) / 700 + Math.random(); if (s > bs) { bs = s; tb = b; } }
@@ -788,19 +907,31 @@ const FIREBASE_CONFIG = {
 const RECAPTCHA_SITE_KEY = '6LeJiNAtAAAAAHozjgInBddSFOPOPBOMRsPwQ6qH'; // App Check, same key as Chop the Check
 const FB = 'https://www.gstatic.com/firebasejs/12.19.0/';
 
+// Firebase is loaded once, the first time something needs it (online duels or profiles)
+let fbCore = null;
+async function appCheck(app) {
+  if (!/thespectrumtechengine\.com$/.test(location.hostname)) return;
+  try { const ac = await import(FB + 'firebase-app-check.js'); ac.initializeAppCheck(app, { provider: new ac.ReCaptchaEnterpriseProvider(RECAPTCHA_SITE_KEY), isTokenAutoRefreshEnabled: true }); } catch (_) {}
+}
+function fbBase() {
+  if (!fbCore) fbCore = (async () => {
+    const [appM, dbM] = await Promise.all([import(FB + 'firebase-app.js'), import(FB + 'firebase-database.js')]);
+    const app = appM.initializeApp(FIREBASE_CONFIG, 'archer-duel');
+    await appCheck(app);
+    return { appM, dbM, app, db: dbM.getDatabase(app) };
+  })().catch(e => { fbCore = null; throw e; });
+  return fbCore;
+}
 async function firebaseRooms() {
-  const [appM, dbM] = await Promise.all([import(FB + 'firebase-app.js'), import(FB + 'firebase-database.js')]);
-  const app = appM.initializeApp(FIREBASE_CONFIG, 'archer-duel');
-  if (/thespectrumtechengine\.com$/.test(location.hostname)) {
-    try { const ac = await import(FB + 'firebase-app-check.js'); ac.initializeAppCheck(app, { provider: new ac.ReCaptchaEnterpriseProvider(RECAPTCHA_SITE_KEY), isTokenAutoRefreshEnabled: true }); } catch (_) {}
-  }
-  const db = dbM.getDatabase(app), me = Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+  const { dbM, db } = await fbBase(), me = Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+  // phones' clocks can be a few minutes out, so challenge ages are measured on Firebase's clock
+  dbM.onValue(dbM.ref(db, '.info/serverTimeOffset'), s => { NET.clock = num(s.val()); });
   const clean = o => JSON.parse(JSON.stringify(o)); // Firebase refuses undefined values
   async function room(name) {
     const peersRef = dbM.ref(db, 'rooms/archer-duel-' + name + '/peers'), mine = dbM.child(peersRef, me);
     let list = [], myP = {}, subs = [];
     const offVal = dbM.onValue(peersRef, snap => {
-      list = Object.entries(snap.val() || {}).map(([id, d]) => ({ peer: id, isMe: id === me, sameTab: id === me, kind: 'viewer', presence: (d && d.p) || {}, by: '' }));
+      list = Object.entries(snap.val() || {}).map(([id, d]) => ({ peer: id, isMe: id === me, sameTab: id === me, kind: 'viewer', presence: (d && d.p) || {}, by: '', since: num(d && d.t) }));
       subs.forEach(s => s.ok({ peers: list }));
     }, () => subs.forEach(s => s.err && s.err()));
     await dbM.onDisconnect(mine).remove();
@@ -844,6 +975,155 @@ function netUnavailable() {
   renderLobby([]);
 }
 
+/* ---------------- profiles and careers ----------------
+   Signing in is optional. A profile is the hunter's "Sir ___ of ___" name plus a password.
+   Firebase Authentication checks the password (we never see or store it); behind the scenes the
+   name becomes a login like "bob.of.trim-town@players.thespectrumtechengine.com" (no email is ever sent).
+   Each career lives at archerCareers/<uid> in Chop the Check's database: anyone can read it,
+   only its owner can write it. Slot 0 is this phone's hunter; slot 1 is a second hunter on the same screen. */
+const CAREER = { uid: ['', ''] };      // career owners of player 0 and player 1 in the current hunt
+const AUTH = [null, null];             // { auth, authM, db } for each sign-in slot on this phone
+const acctBusy = [false, false];
+let careerSeed = -1;                   // the hunt whose result has already been added to careers
+const MODE_NAME = { online: 'Online', cpu: 'Against the computer', same: 'Same screen' };
+function loginId(first, place) {
+  const s = x => cleanTxt(x, 20).normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  const a = s(first), b = s(place);
+  return a ? (b ? a + '.of.' + b : a) + '@players.thespectrumtechengine.com' : '';
+}
+async function fbAuth(i) {
+  if (AUTH[i]) return AUTH[i];
+  const base = await fbBase(), authM = await import(FB + 'firebase-auth.js');
+  let app = base.app, db = base.db;
+  // the second hunter signs in on their own copy of Firebase, only for as long as the page is open
+  if (i === 1) { app = base.appM.initializeApp(FIREBASE_CONFIG, 'archer-duel-2'); await appCheck(app); db = base.dbM.getDatabase(app); }
+  const auth = i === 0 ? authM.getAuth(app) : authM.initializeAuth(app, { persistence: authM.browserSessionPersistence });
+  await auth.authStateReady();
+  AUTH[i] = { auth, authM, db };
+  return AUTH[i];
+}
+const signedIn = i => (AUTH[i] && AUTH[i].auth.currentUser) || null;
+const nameEls = i => i ? [$('#name2In'), $('#place2In')] : [$('#nameIn'), $('#placeIn')];
+async function readCareer(uid) {
+  if (!uid) return null;
+  const { dbM, db } = await fbBase();
+  const s = await dbM.get(dbM.ref(db, 'archerCareers/' + uid));
+  return s.exists() ? s.val() : null;
+}
+function authMessage(e) {
+  const c = String((e && e.code) || '');
+  if (/invalid-credential|wrong-password|user-not-found|invalid-email/.test(c)) return "That name and password don't match a profile. Check them, or make a new profile.";
+  if (/email-already-in-use/.test(c)) return "There's already a hunter by that name. Sign in, or add a different place after \"of\" to make yours unique.";
+  if (/weak-password|missing-password/.test(c)) return 'Choose a password of at least 6 letters or numbers.';
+  if (/too-many-requests/.test(c)) return 'Too many tries. Wait a few minutes, then try again.';
+  if (/network/.test(c)) return "The royal records couldn't be reached. Check your internet connection.";
+  if (/operation-not-allowed|configuration-not-found|admin-restricted/.test(c)) return "Profiles aren't switched on yet. Play as a guest for now.";
+  if (/PERMISSION_DENIED|permission/i.test(String((e && e.message) || c))) return "Your career couldn't be saved yet. Play on as a guest for now.";
+  return 'Something went wrong. Try again in a moment.';
+}
+function acctMsg(i, t) { $(`#acct${i + 1} .acctMsg`).textContent = t || ''; }
+function renderAcct(i) {
+  const u = signedIn(i), box = $(`#acct${i + 1}`), [n, p] = nameEls(i);
+  box.querySelector('.out').hidden = !!u; box.querySelector('.in').hidden = !u;
+  n.readOnly = p.readOnly = !!u; n.classList.toggle('locked', !!u); p.classList.toggle('locked', !!u);
+  box.querySelectorAll('button').forEach(b => b.disabled = acctBusy[i]);
+}
+async function accountAction(i, make) {
+  const [n, p] = nameEls(i), pw = $(`#pw${i + 1}`).value, email = loginId(n.value, p.value);
+  if (!cleanTxt(n.value, 14)) { acctMsg(i, 'Type your name first, then your password.'); n.focus(); return; }
+  if (!email) { acctMsg(i, 'Use the letters A to Z or numbers in your name to make a profile.'); return; }
+  if (!pw) { acctMsg(i, 'Type your password.'); $(`#pw${i + 1}`).focus(); return; }
+  acctBusy[i] = true; renderAcct(i); acctMsg(i, make ? 'Writing you into the royal records…' : 'Checking the royal records…');
+  try {
+    const A = await fbAuth(i), { authM, auth } = A;
+    if (make) {
+      const cred = await authM.createUserWithEmailAndPassword(auth, email, pw);
+      const nm = mkName(n.value, p.value, 'Aldric'), { dbM } = await fbBase();
+      await dbM.set(dbM.ref(A.db, 'archerCareers/' + cred.user.uid), { name: nm.full, first: cleanTxt(n.value, 14), place: cleanTxt(p.value, 18), since: dbM.serverTimestamp() });
+    } else await authM.signInWithEmailAndPassword(auth, email, pw);
+    $(`#pw${i + 1}`).value = '';
+    await afterSignIn(i);
+    acctMsg(i, make ? 'Profile made. Every hunt you finish now counts towards your career.' : 'Welcome back. Your career is being kept.');
+  } catch (e) { console.warn(e); acctMsg(i, authMessage(e)); }
+  finally { acctBusy[i] = false; renderAcct(i); }
+}
+// fill the name boxes from the profile, so the name can't drift from the career
+async function afterSignIn(i) {
+  const u = signedIn(i); if (!u) return;
+  if (i === 0) try { localStorage.setItem('archer-signed', '1'); } catch (_) {}
+  try {
+    const c = await readCareer(u.uid), [n, p] = nameEls(i);
+    if (c && c.first) { n.value = c.first; p.value = c.place || ''; saveNames(); }
+  } catch (e) { console.warn(e); }
+  renderAcct(i);
+}
+async function signOutSlot(i) {
+  const A = AUTH[i]; if (A) try { await A.authM.signOut(A.auth); } catch (_) {}
+  if (i === 0) try { localStorage.removeItem('archer-signed'); } catch (_) {}
+  acctMsg(i, 'Signed out. You can still hunt as a guest.'); renderAcct(i);
+}
+// Who owns each side's career in the hunt that is starting now
+function huntCareers() {
+  const me = signedIn(0), two = signedIn(1);
+  if (role === 'local') CAREER.uid = [me ? me.uid : '', cfg.opp === 'cpu' ? '' : two ? two.uid : ''];
+}
+// Add a finished hunt to the career of everyone signed in on this phone who took part
+async function recordCareer() {
+  if (careerSeed === seed || role === 'spec') return;
+  careerSeed = seed;
+  const mode = role === 'local' ? (cfg.opp === 'cpu' ? 'cpu' : 'same') : 'online';
+  const sides = role === 'host' ? [[0, 0]] : role === 'guest' ? [[1, 0]] : cfg.opp === 'cpu' ? [[0, 0]] : [[0, 0], [1, 1]];
+  for (const [pid, slot] of sides) {
+    const u = signedIn(slot); if (!u) continue;
+    const f = { ...feats[pid] }, won = winner === pid, birdsDown = downed[pid], pts = scores[pid], nm = NAMES[pid];
+    const [n, p] = nameEls(slot);
+    try {
+      const { dbM } = await fbBase();
+      await dbM.runTransaction(dbM.ref(AUTH[slot].db, 'archerCareers/' + u.uid), c => {
+        c = c || { name: nm.full, first: cleanTxt(n.value, 14), place: cleanTxt(p.value, 18), since: Date.now() };
+        c.hunts = c.hunts || {};
+        const h = c.hunts[mode] || { p: 0, w: 0 }; h.p++; if (won) h.w++; c.hunts[mode] = h;
+        const add = (k, v) => { c[k] = (c[k] || 0) + v; };
+        add('birds', birdsDown); add('points', pts); add('phoenix', f.phx); add('huntersHit', f.hh); add('timesHit', f.th); add('blocked', f.blk);
+        c.bestCombo = Math.max(c.bestCombo || 0, f.combo); c.updated = Date.now();
+        return c;
+      });
+    } catch (e) { console.warn('career not saved', e); }
+  }
+}
+// A career card, read straight from the database
+function careerCard(c, who) {
+  const d = document.createElement('div'); d.className = 'card';
+  const h = document.createElement('p'); h.className = 'hd'; h.textContent = (c && c.name) || who; d.appendChild(h);
+  if (!c) { const m = document.createElement('p'); m.className = 'how'; m.textContent = 'No career kept yet.'; d.appendChild(m); return d; }
+  const hs = c.hunts || {}, tot = Object.values(hs).reduce((a, h) => ({ p: a.p + num(h.p), w: a.w + num(h.w) }), { p: 0, w: 0 });
+  const rows = [['Hunts won', `${tot.w} of ${tot.p}${tot.p ? ` (${Math.round(tot.w / tot.p * 100)}%)` : ''}`]];
+  for (const m of ['online', 'cpu', 'same']) if (hs[m]) rows.push([MODE_NAME[m], `won ${num(hs[m].w)} of ${num(hs[m].p)}`]);
+  rows.push(['Birds downed', num(c.birds)], ['Points', num(c.points)], ['Phoenixes', num(c.phoenix)],
+    ['Most birds on one arrow', num(c.bestCombo)], ['Hunters knocked flat', num(c.huntersHit)], ['Times knocked flat', num(c.timesHit)], ['Arrows stopped by a shield', num(c.blocked)]);
+  const t = document.createElement('dl');
+  for (const [k, v] of rows) { const dt = document.createElement('dt'), dd = document.createElement('dd'); dt.textContent = k; dd.textContent = String(v); t.append(dt, dd); }
+  d.appendChild(t);
+  if (c.since) { const s = document.createElement('p'); s.className = 'how'; s.textContent = 'Hunting since ' + new Date(num(c.since)).toLocaleDateString(undefined, { month: 'long', year: 'numeric' }); d.appendChild(s); }
+  return d;
+}
+let recordsBack = 'menu';
+async function showRecords(list, back) {
+  recordsBack = back; hidePanels(); $('#records').hidden = false;
+  const box = $('#recCards'); box.textContent = '';
+  const note = document.createElement('p'); note.className = 'how'; note.textContent = 'Opening the royal records…'; box.appendChild(note);
+  try {
+    const cards = await Promise.all(list.map(async ([uid, who]) => careerCard(uid ? await readCareer(uid) : null, who)));
+    box.textContent = ''; cards.forEach(c => box.appendChild(c));
+  } catch (e) { console.warn(e); note.textContent = "The royal records couldn't be reached. Check your internet connection."; }
+}
+// the records of both hunters in the hunt that just ended (or the last one)
+function huntRecords() {
+  if (role === 'guest' && NET.cu) CAREER.uid = [NET.cu[0], (signedIn(0) || {}).uid || NET.cu[1]];
+  if (role === 'spec' && NET.cu) CAREER.uid = NET.cu.slice();
+  return [0, 1].filter(i => CAREER.uid[i]).map(i => [CAREER.uid[i], NAMES[i].full]);
+}
+
 // "Send the code on WhatsApp": a link that opens the game and joins this duel
 const GAME_URL = 'https://thespectrumtechengine.com/archer-duel/';
 function inviteDuel() {
@@ -853,9 +1133,25 @@ function inviteDuel() {
   if (!window.open(wa, '_blank')) location.href = wa;
 }
 function myPeerIn(room) { const me = room.peers().find(q => q.isMe && q.sameTab); return me ? me.peer : ''; }
+// A challenge nobody accepts is taken down after 10 minutes
+const CHALLENGE_LIFE = 10 * 60 * 1000;
+const netNow = () => Date.now() + num(NET.clock);
+const challengeAge = q => { const t = num(q.presence.at) || q.since; return t ? netNow() - t : 0; };
+function openChallenge() {
+  NET.openAt = netNow();
+  NET.lobby.presence({ open: NET.code, at: NET.openAt, nm: NAMES[0].full, cu: CAREER.uid[0] || '', cfg: { mode: cfg.mode, n: cfg.n, terrain: cfg.terrain, target: cfg.target } }).catch(() => {});
+}
+// the challenger's own phone takes the challenge down when its time is up; everyone else's lobby list hides it too
+setInterval(() => {
+  if (role === 'host' && state === 'waiting' && !NET.guestPeer && NET.openAt && netNow() - NET.openAt > CHALLENGE_LIFE) {
+    netLeave(); state = 'menu';
+    showWait('Your challenge has lapsed', '', 'Nobody accepted it within 10 minutes, so it has been taken down. Return to the menu to open a new one.', 'Return');
+  }
+  if (NET.lobby && cfg.opp === 'online' && !$('#menu').hidden) renderLobby(NET.lobby.peers());
+}, 15000);
 async function renderLobby(peers) {
   const list = $('#lobbyList'); list.textContent = '';
-  const open = peers.filter(q => !q.isMe && q.presence && typeof q.presence.open === 'string' && /^\d{4}$/.test(q.presence.open));
+  const open = peers.filter(q => !q.isMe && q.presence && typeof q.presence.open === 'string' && /^\d{4}$/.test(q.presence.open) && challengeAge(q) < CHALLENGE_LIFE);
   if (!NET.lobby) return;
   if (!open.length) { const d = document.createElement('div'); d.className = 'how'; d.textContent = 'No open challenges yet.'; list.appendChild(d); return; }
   let names = {};
@@ -870,6 +1166,17 @@ async function renderLobby(peers) {
     const tn = { flat: 'the meadow', hill: 'the mountain', ravine: 'the bridge', high: 'the beach', broken: 'the forest' }[c.terrain] || 'the field';
     sm.textContent = `${c.mode === 'live' ? 'Open combat' : 'Measured turns'}, first to ${num(c.target, 25) | 0}, ${num(c.n, 0) | 0} obstacles, ${tn}. Code ${q.presence.open}`;
     left.appendChild(sm);
+    // a challenger with a profile shows their record, and it can be opened in full
+    const cu = cleanTxt(q.presence.cu, 40);
+    if (cu) {
+      const rec = document.createElement('button'); rec.className = 'linkish'; rec.type = 'button'; rec.textContent = 'See their record';
+      rec.onclick = () => showRecords([[cu, who]], 'menu');
+      readCareer(cu).then(cr => {
+        if (!cr) return; const t = Object.values(cr.hunts || {}).reduce((a, h) => ({ p: a.p + num(h.p), w: a.w + num(h.w) }), { p: 0, w: 0 });
+        rec.textContent = `Won ${t.w} of ${t.p} hunts. See their record`;
+      }).catch(() => {});
+      left.appendChild(rec);
+    }
     const b = document.createElement('button'); b.className = 'big sm'; b.textContent = 'Accept';
     b.onclick = () => joinDuel(q.presence.open);
     row.append(left, b); list.appendChild(row);
@@ -889,9 +1196,10 @@ async function hostDuel() {
   role = 'host'; NET.code = code; NET.guestPeer = ''; evtSeq = 0; evts = [];
   wins[0] = wins[1] = 0; matchNo = 0;
   NAMES[0] = myName(); NAMES[1] = { full: 'A challenger', short: 'Challenger' }; saveNames();
+  CAREER.uid = [(signedIn(0) || {}).uid || '', ''];
   NET.myPeer = myPeerIn(NET.room);
   NET.room.presence({ role: 'host', guest: null, s: null, nm: NAMES[0].full }).catch(() => {});
-  NET.lobby.presence({ open: code, nm: NAMES[0].full, cfg: { mode: cfg.mode, n: cfg.n, terrain: cfg.terrain, target: cfg.target } }).catch(() => {});
+  openChallenge();
   NET.unsub = NET.room.onPeers(ch => hostPeers(ch.peers), () => netLost('The connection to the duel was lost.'));
   state = 'waiting';
   showWait('Awaiting a challenger', code, 'Send your opponent the code on WhatsApp, or they can choose Online and accept your challenge. Anyone else who joins will watch.');
@@ -903,7 +1211,7 @@ function hostPeers(peers) {
   if (NET.guestPeer && !g) {
     NET.guestPeer = ''; NET.room.presence({ guest: null }).catch(() => {});
     state = 'waiting'; players = []; arrows = [];
-    NET.lobby.presence({ open: NET.code, nm: NAMES[0].full, cfg: { mode: cfg.mode, n: cfg.n, terrain: cfg.terrain, target: cfg.target } }).catch(() => {});
+    openChallenge();
     showWait(`${NAMES[1].full} has fled the field`, NET.code, 'Your opponent left. Wait here for a new challenger, or leave.');
     $('#hudBtns').hidden = true;
     return;
@@ -912,7 +1220,7 @@ function hostPeers(peers) {
     const c = peers.find(q => !q.isMe && q.kind === 'viewer' && q.presence && q.presence.role === 'challenger');
     if (c) {
       NET.guestPeer = c.peer;
-      NAMES[1] = nameFrom(c.presence.nm, 'Corvin');
+      NAMES[1] = nameFrom(c.presence.nm, 'Corvin'); CAREER.uid[1] = cleanTxt(c.presence.cu, 40);
       const inp = c.presence.in || {};
       NET.lastF = num(inp.f, 0); NET.lastRe = num(inp.re, 0);
       NET.room.presence({ guest: c.peer }).catch(() => {});
@@ -930,7 +1238,8 @@ async function joinDuel(code) {
   role = 'spec'; NET.code = code; NET.hostPeer = ''; NET.fireSeq = 0; NET.fv = null; NET.re = 0; NET.lastEvt = -1; NET.lastSnap = null; NET.joinAt = performance.now(); NET.hostGoneAt = 0;
   NET.myPeer = myPeerIn(NET.room);
   NAMES[1] = myName(); saveNames();
-  NET.room.presence({ role: 'challenger', in: null, nm: NAMES[1].full }).catch(() => {});
+  CAREER.uid = ['', (signedIn(0) || {}).uid || ''];
+  NET.room.presence({ role: 'challenger', in: null, nm: NAMES[1].full, cu: CAREER.uid[1] }).catch(() => {});
   state = 'joining';
   showWait('Seeking the duel', code, 'Looking for the challenger who opened this duel.');
 }
@@ -938,8 +1247,8 @@ function netLeave() {
   try { if (NET.unsub) NET.unsub(); } catch (_) {}
   NET.unsub = null;
   if (NET.room) { NET.room.leave().catch(() => {}); NET.room = null; }
-  if (NET.lobby) NET.lobby.presence({ open: null, cfg: null }).catch(() => {});
-  role = 'local'; NET.hostPeer = ''; NET.guestPeer = ''; NET.lastSnap = null;
+  if (NET.lobby) NET.lobby.presence({ open: null, at: null, cfg: null }).catch(() => {});
+  role = 'local'; NET.hostPeer = ''; NET.guestPeer = ''; NET.lastSnap = null; NET.openAt = 0; NET.cu = null;
 }
 function netLost(msg) { netLeave(); state = 'menu'; showWait('The hunt is ended', '', msg, 'Return'); }
 
@@ -952,9 +1261,10 @@ function hostPublish() {
     st: state, md: cfg.mode, n: cfg.n, tr: cfg.terrain, se: cfg.setting, sd: seed, gt: +gameT.toFixed(2), tg: cfg.target, nm: [NAMES[0].full, NAMES[1].full],
     w: Math.round(wind), tn: turn, tl: turnLocked ? 1 : 0, it: +Math.max(0, introT).toFixed(2), wn: [wins[0], wins[1]], wr: winner, mn: matchNo,
     sc: [scores[0], scores[1]], dn: [downed[0], downed[1]], lv: level, lk: levelKills,
-    p: players.map(p => [Math.round(p.x), +p.aim.toFixed(3), +p.cool.toFixed(2), packDrag(p), +p.daze.toFixed(1), p.lodged.map(l => [Math.round(l.lx), Math.round(l.ly), +l.ang.toFixed(2), l.fl])]),
+    p: players.map(p => [Math.round(p.x), +p.aim.toFixed(3), +p.cool.toFixed(2), packDrag(p), +p.daze.toFixed(1), p.lodged.map(l => [Math.round(l.lx), Math.round(l.ly), +l.ang.toFixed(2), l.fl]), p.shield, p.sArrows.map(L), p.hits]),
     b: birds.slice(0, 6).map(b => [b.id, BKEYS.indexOf(b.t), Math.round(b.x), Math.round(b.y), Math.round(b.vx), Math.round(b.vy), b.hp, b.lodged.slice(0, 4).map(L)]),
-    a: arrows.filter(a => !a.dead).slice(-12).map(a => [Math.round(a.x), Math.round(a.y), +a.ang.toFixed(2), Math.round(a.vx), Math.round(a.vy), a.owner, a.stuck ? 1 : 0, +a.st.toFixed(1), a.bird ? [BKEYS.indexOf(a.bird.t), a.bird.lodged.slice(0, 4).map(L)] : 0, (a.more || []).slice(0, 3).map(t => BKEYS.indexOf(t))]),
+    a: arrows.filter(a => !a.dead).slice(-12).map(a => [Math.round(a.x), Math.round(a.y), +a.ang.toFixed(2), Math.round(a.vx), Math.round(a.vy), a.owner, a.stuck ? 1 : 0, +a.st.toFixed(1), a.bird ? [BKEYS.indexOf(a.bird.t), a.bird.lodged.slice(0, 4).map(L)] : 0, (a.more || []).slice(0, 3).map(t => BKEYS.indexOf(t)), a.burn ? 1 : 0]),
+    ft: feats.map(f => [f.phx, f.combo, f.hh, f.th, f.blk]), cu: [CAREER.uid[0] || '', CAREER.uid[1] || ''],
     e: evts,
   };
   NET.room.presence({ s }).catch(() => {});
@@ -1009,7 +1319,7 @@ function applySnap(s, prev) {
   if (newLevel) {
     cfg.n = clamp(num(s.n, 0) | 0, 0, 5); cfg.terrain = ['flat','hill','ravine','high','broken'].includes(s.tr) ? s.tr : 'flat';
     cfg.setting = ['dusk','winter','night'].includes(s.se) ? s.se : 'dusk'; seed = num(s.sd, 1) | 0;
-    buildLevel(); players = [mkPlayer(0), mkPlayer(1)]; parts = []; decals = []; texts = []; birds = [];
+    buildLevel(); players = [mkPlayer(0), mkPlayer(1)]; parts = []; decals = []; texts = []; birds = []; flames = [];
   }
   cfg.target = clamp(num(s.tg, 25) | 0, 1, 999);
   if (Array.isArray(s.nm)) { NAMES[0] = nameFrom(s.nm[0], 'Aldric'); if (role !== 'guest') NAMES[1] = nameFrom(s.nm[1], 'Corvin'); }
@@ -1031,7 +1341,10 @@ function applySnap(s, prev) {
     p.daze = clamp(num(d[4]), 0, 7);
     if (mine && p.daze > 0) p.drag = null;
     if (Array.isArray(d[5])) p.lodged = d[5].slice(0, 3).map((l, j) => ({ ...unpackL(l), stain: p.lodged[j] ? p.lodged[j].stain : 5 }));
+    p.shield = clamp(num(d[6]) | 0, 0, 2); p.sArrows = p.shield && Array.isArray(d[7]) ? d[7].slice(0, 2).map(unpackL) : []; p.hits = num(d[8]) | 0;
   });
+  if (Array.isArray(s.ft)) s.ft.slice(0, 2).forEach((f, i) => { if (Array.isArray(f)) feats[i] = { phx: num(f[0]) | 0, combo: num(f[1]) | 0, hh: num(f[2]) | 0, th: num(f[3]) | 0, blk: num(f[4]) | 0 }; });
+  if (Array.isArray(s.cu)) NET.cu = [cleanTxt(s.cu[0], 40), cleanTxt(s.cu[1], 40)];
   if (Array.isArray(s.b)) {
     const next = [];
     for (const d of s.b.slice(0, 6)) {
@@ -1049,7 +1362,7 @@ function applySnap(s, prev) {
   if (Array.isArray(s.a)) arrows = s.a.slice(0, 16).map(a => ({
     x: num(a[0]), y: num(a[1]), ang: num(a[2]), vx: num(a[3]), vy: num(a[4]), owner: a[5] ? 1 : 0, stuck: !!a[6], st: num(a[7]), dead: false, remote: true,
     bird: Array.isArray(a[8]) ? { t: BKEYS[num(a[8][0]) | 0] || 'raven', lodged: Array.isArray(a[8][1]) ? a[8][1].slice(0, 4).map(unpackL) : [] } : null,
-    more: Array.isArray(a[9]) ? a[9].slice(0, 3).map(i => BKEYS[num(i) | 0] || 'raven') : [],
+    more: Array.isArray(a[9]) ? a[9].slice(0, 3).map(i => BKEYS[num(i) | 0] || 'raven') : [], burn: a[10] ? 1 : 0,
   }));
   if (Array.isArray(s.e)) {
     const maxI = s.e.reduce((m, e) => Math.max(m, num(e && e.i)), 0);
@@ -1080,15 +1393,30 @@ function spawnBird() {
   if (t === 'pheasant' || t === 'goose') b.tx = left ? rand(W - 260, W - 80) : rand(80, 260);
   birds.push(b);
 }
+// The Phoenix starts well off one side (so its roar comes first) and darts across in a dead straight line
+function spawnPhoenix() {
+  const left = Math.random() < .5, ceil = birdCeil();
+  const y0 = rand(170, ceil - 60), y1 = clamp(y0 + rand(-200, 200), 150, ceil - 20);
+  const x0 = left ? -700 : W + 700, x1 = left ? W + 300 : -300;
+  const d = Math.hypot(x1 - x0, y1 - y0), spd = BT.phoenix.spd * (1 + .06 * Math.max(0, level - 2));
+  birds.push({ id: ++birdSeq, t: 'phoenix', x: x0, y: y0, vx: (x1 - x0) / d * spd, vy: (y1 - y0) / d * spd, hp: 1, lodged: [], ph: 0, hurt: 0, callT: 9, dodged: new WeakSet() });
+  emitFx({ k: 'phx' });
+}
+const flying = () => birds.filter(b => b.t !== 'phoenix').length;
 function updateBirds(dt) {
   if (state === 'play' && introT <= 0) {
     spawnT -= dt;
-    if (birds.length < maxBirds(level) && spawnT <= 0) { spawnBird(); spawnT = level === 1 ? 1.5 : rand(1.2, 2.6); }
+    if (flying() < maxBirds(level) && spawnT <= 0) { spawnBird(); spawnT = level === 1 ? 1.5 : rand(1.2, 2.6); }
+    // the wild card: from level II on, now and then, never two at once
+    if (level >= 2 && !birds.some(b => b.t === 'phoenix')) { phxT -= dt; if (phxT <= 0) { spawnPhoenix(); phxT = rand(60, 120); } }
   }
+  // a Phoenix that has crossed the field is gone
+  birds = birds.filter(b => b.t !== 'phoenix' || (b.vx > 0 ? b.x < W + 320 : b.x > -320));
   const mul = spdMul(level), ceil = birdCeil();
   for (const b of birds) {
     const T = BT[b.t];
     b.ph += dt * T.flap * (b.vy < -15 ? 1.4 : 1); b.hurt = Math.max(0, b.hurt - dt);
+    if (b.t === 'phoenix') { b.x += b.vx * dt; b.y += b.vy * dt; continue; } // no turning, no dodging: straight and fast
     let spd = T.spd * mul * (1 - .12 * (T.hp - b.hp));
     b.rt -= dt;
     const retarget = () => { b.tx = rand(150, W - 150); b.ty = rand(150, ceil); b.rt = rand(1.5, 4); };
@@ -1124,7 +1452,22 @@ function guestBirds(dt) {
     if (b.sx !== undefined) { const k = Math.min(1, dt * 10); b.x += (b.sx + b.vx * tau - b.x) * k; b.y += (b.sy + b.vy * tau - b.y) * k; }
   }
 }
+// The Phoenix's trail: points of fire left behind it, each alight for PHX_TRAIL seconds.
+// Every phone builds it from where the Phoenix flies; the host also burns arrows that touch it.
+let flames = [];
 function birdVisuals(dt) {
+  flames = flames.filter(f => time - f.t < PHX_TRAIL);
+  for (const b of birds) if (b.t === 'phoenix') {
+    const l = flames[flames.length - 1];
+    // fill in the gaps so a fast Phoenix still leaves an unbroken trail
+    if (l && l.id === b.id) { const n = Math.min(8, Math.floor(Math.hypot(b.x - l.x, b.y - l.y) / 14)); for (let i = 1; i <= n; i++) flames.push({ id: b.id, x: l.x + (b.x - l.x) * i / (n + 1), y: l.y + (b.y - l.y) * i / (n + 1), t: time }); }
+    flames.push({ id: b.id, x: b.x, y: b.y, t: time });
+    for (let i = 0; i < 3; i++) if (Math.random() < dt * 60) parts.push({ k: 'ember', x: b.x - b.vx * .02 + rand(-14, 14), y: b.y + rand(-12, 12), vx: rand(-60, 60) - b.vx * .08, vy: rand(-90, 30), life: rand(.5, 1.2), t: 0, r: rand(1.5, 3.8), c: ['#fff2c8', '#ffd36a', '#ff9a3a', '#ff5a1a'][i % 4] });
+  }
+  for (const a of arrows) if (a.burn && !a.dead && (!a.stuck || a.st < BURN_TIME) && Math.random() < dt * 25) {
+    const k = rand(0, 1), bx = a.x + (a.dx || 0) - Math.cos(a.ang) * 60 * k, by = a.y + (a.dy || 0) - Math.sin(a.ang) * 60 * k;
+    parts.push({ k: 'ember', x: bx, y: by - 4, vx: rand(-20, 20), vy: rand(-70, -20), life: rand(.4, .9), t: 0, r: rand(1.2, 2.8), c: ['#ffd36a', '#ff9a3a', '#ff5a1a'][Math.floor(Math.random() * 3)] });
+  }
   for (const b of birds) {
     b.callT = (b.callT === undefined ? rand(1, 4) : b.callT) - dt;
     if (b.callT <= 0) { b.callT = rand(4, 9); if (b.x > 0 && b.x < W) sfx.call(b.t); }
@@ -1136,7 +1479,19 @@ function birdVisuals(dt) {
   }
 }
 function arrowVsBirds(a) {
-  if (a.stuck || a.dead) return; // an arrow already carrying a bird can still take more
+  if (a.stuck || a.dead || a.burn) return; // an arrow already carrying a bird can still take more; a burnt one can't
+  if (!birdVsArrow(a)) burnInTrail(a);
+}
+// Touching the Phoenix's trail (but not the bird) sets the arrow alight: it drops, harmless, and burns on the ground
+function burnInTrail(a) {
+  for (const f of flames) {
+    if (time - f.t < .06 || Math.abs(a.x - f.x) > 26 || Math.hypot(a.x - f.x, a.y - f.y) > 26) continue;
+    a.burn = 1; a.vx *= .22; a.vy = Math.max(a.vy * .3, 40);
+    emitFx({ k: 'burn', x: Math.round(a.x), y: Math.round(a.y) });
+    return;
+  }
+}
+function birdVsArrow(a) {
   for (let bi = 0; bi < birds.length; bi++) {
     const b = birds[bi], T = BT[b.t];
     if (Math.hypot(a.x - b.x, a.y - b.y) >= T.r) continue;
@@ -1152,6 +1507,8 @@ function arrowVsBirds(a) {
       if (!a.bird) a.bird = { t: b.t, lodged: b.lodged.slice(0, 5) }; else (a.more = a.more || []).push(b.t);
       a.vx *= T.mass; a.vy *= T.mass;
       scores[a.owner] += T.pts + bonus; downed[a.owner]++; levelKills++;
+      if (b.t === 'phoenix') feats[a.owner].phx++;
+      feats[a.owner].combo = Math.max(feats[a.owner].combo, n);
       emitFx({ k: 'bird', x: Math.round(a.x), y: Math.round(a.y), t: b.t, s: a.owner, p: T.pts + bonus });
       if (n > 1) emitFx({ k: 'combo', n, b: bonus, x: Math.round(a.x), y: Math.round(a.y) });
       spawnT = Math.max(spawnT, level === 1 ? 1.5 : .9);
@@ -1161,8 +1518,9 @@ function arrowVsBirds(a) {
         const lv = level; showBanner('Level ' + roman(lv), 1.3, () => showBanner(LEVEL_TEXT[lv] || 'The birds grow wilder', 1.6));
       }
     }
-    return;
+    return true;
   }
+  return false;
 }
 
 /* ---------------- update ---------------- */
@@ -1203,7 +1561,7 @@ function update(rdt) {
   birdVisuals(dt);
 
   for (const p of players) {
-    p.hurt = Math.max(0, p.hurt - dt); p.shootT = Math.max(0, p.shootT - dt);
+    p.hurt = Math.max(0, p.hurt - dt); p.shootT = Math.max(0, p.shootT - dt); p.shieldT = Math.max(0, p.shieldT - dt);
     if (authority()) {
       p.cool = Math.max(0, p.cool - dt);
       if (p.daze > 0) { p.daze -= dt; if (p.daze <= 0) { p.daze = 0; emitFx({ k: 'up', p: p.id }); } }
@@ -1243,6 +1601,8 @@ function updateParts(dt) {
   for (const q of parts) {
     q.t += dt;
     if (q.k === 'feather') { q.vx = q.vx * (1 - dt * 2.2) + windShown * .25 * dt; q.vy = Math.min(q.vy + 160 * dt, 45); q.x += (q.vx + Math.sin(time * 3 + q.ph) * 25) * dt; q.y += q.vy * dt; q.rot += dt * 2; if (q.y > groundY(q.x) - 2) { q.vx = 0; q.vy = 0; q.y = groundY(q.x) - 2; } continue; }
+    if (q.k === 'ember') { q.vx *= 1 - dt * 1.5; q.vy = q.vy * (1 - dt * 1.5) - 40 * dt; q.x += q.vx * dt; q.y += q.vy * dt; continue; } // sparks of fire drift up
+    if (q.k === 'fallarrow') { q.rot += q.spin * dt; if (q.y >= groundY(q.x) - 4) { q.y = groundY(q.x) - 4; q.vx *= .5; q.vy = 0; q.spin = 0; continue; } }
     q.vy += 900 * dt; q.x += q.vx * dt; q.y += q.vy * dt;
     if (q.k === 'blood') {
       const gy = groundY(q.x);
@@ -1255,7 +1615,7 @@ function simArrows(dt) {
   for (const a of arrows) {
     if (a.dead) continue;
     a.age += dt;
-    if (a.stuck) { a.st += dt; if (a.st > (a.bird ? 9 : 7)) a.dead = true; continue; }
+    if (a.stuck) { a.st += dt; if (a.st > (a.burn ? BURN_TIME + 2.5 : a.bird ? 9 : 7)) a.dead = true; continue; }
     a.f0x = a.x; a.f0y = a.y; a.clk = Math.max(0, (a.clk || 0) - dt);
     for (let i = 0; i < 4 && !a.stuck && !a.dead; i++) {
       const ev = stepArrow(a, dt / 4);
@@ -1263,10 +1623,11 @@ function simArrows(dt) {
       else if (ev === 'ground' || ev === 'rest') { a.stuck = true; if (ev === 'ground') a.y += 14; emitFx({ k: 'stk', x: Math.round(a.x), y: Math.round(a.y), g: ev === 'ground' ? 1 : 0 }); }
       if (Math.hypot(a.vx, a.vy) > 30 && !a.stuck) a.ang = Math.atan2(a.vy, a.vx);
       arrowVsBirds(a);
-      if (a.dead || a.stuck) continue; // arrows carrying a bird can still strike a hunter
+      if (a.dead || a.stuck || a.burn) continue; // arrows carrying a bird can still strike a hunter; burnt ones are harmless
       for (const p of players) {
         if (p.daze > 0) continue;
         if (p.id === a.owner && a.age < 0.3) continue;
+        if (p.shield > 0 && (hitTest(p, a.x, a.y) || shieldTest(p, a.x, a.y))) { a.dead = true; shieldHit(p, a); break; }
         if (hitTest(p, a.x, a.y)) { a.dead = true; hitHunter(p, a); break; }
       }
     }
@@ -1308,10 +1669,12 @@ function endScreen() {
   again.textContent = role === 'guest' ? 'Call for another hunt' : 'Another hunt';
   $('#overNote').textContent = role === 'host' || role === 'guest' ? 'Either of you may call the next hunt.' : role === 'spec' ? 'You are watching this hunt.' : '';
   hidePanels(); $('#over').hidden = false; $('#hudBtns').hidden = true;
+  $('#recordsBtn').hidden = !huntRecords().length;
+  recordCareer();
   if (authority()) matchNo++;
   setTimeout(() => { if (!again.hidden) again.focus(); }, 50);
 }
-function hidePanels() { $('#menu').hidden = true; $('#over').hidden = true; $('#wait').hidden = true; }
+function hidePanels() { $('#menu').hidden = true; $('#over').hidden = true; $('#wait').hidden = true; $('#records').hidden = true; }
 
 /* ---------------- drawing helpers ---------------- */
 function rr(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
@@ -1609,9 +1972,36 @@ function drawBird(t, x, y, dir, ph, dead, sc, lodged, hurt) {
   }
   ctx.restore();
 }
+// a soft ball of fire light, drawn once and reused for the trail, the Phoenix's glow and burning arrows
+const glow = (() => {
+  const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d');
+  const r = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+  r.addColorStop(0, 'rgba(255,250,220,1)'); r.addColorStop(.25, 'rgba(255,214,106,.9)'); r.addColorStop(.55, 'rgba(255,110,26,.45)'); r.addColorStop(1, 'rgba(255,40,0,0)');
+  g.fillStyle = r; g.fillRect(0, 0, 128, 128); return c;
+})();
+function glowAt(x, y, r, a) { ctx.globalAlpha = a; ctx.drawImage(glow, x - r, y - r, r * 2, r * 2); }
+function drawFlames() {
+  if (!flames.length) return;
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  for (const f of flames) {
+    const k = (time - f.t) / PHX_TRAIL; if (k < 0 || k >= 1) continue;
+    const flick = .8 + .2 * Math.sin(time * 40 + f.x * .05);
+    glowAt(f.x, f.y + k * 40, (62 * (1 - k) + 14) * flick, (1 - k) * .6);
+  }
+  ctx.restore(); ctx.globalAlpha = 1;
+}
 function drawLiveBirds() {
   for (const b of birds) {
     const T = BT[b.t]; if (!T) continue;
+    if (T.wild) { // the Phoenix burns bright, with a flickering crest of fire
+      ctx.save(); ctx.globalCompositeOperation = 'lighter'; glowAt(b.x, b.y, 110 + Math.sin(time * 30) * 8, .7); glowAt(b.x, b.y, 55, .9); ctx.restore(); ctx.globalAlpha = 1;
+      drawBird(b.t, b.x, b.y, b.vx >= 0 ? 1 : -1, b.ph, false, T.sc, b.lodged, b.hurt);
+      const d = b.vx >= 0 ? 1 : -1;
+      ctx.save(); ctx.globalCompositeOperation = 'lighter';
+      for (let i = 0; i < 4; i++) glowAt(b.x + d * (24 - i * 8) * T.sc / 1.9, b.y - (24 + Math.sin(time * 25 + i) * 6) * T.sc / 1.9, 12 + i * 2, .8);
+      ctx.restore(); ctx.globalAlpha = 1;
+      continue;
+    }
     drawBird(b.t, b.x, b.y, b.vx >= 0 ? 1 : -1, b.ph, false, T.sc, b.lodged, b.hurt);
     if (T.prize) for (let i = 0; i < b.hp; i++) drop(b.x - (b.hp - 1) * 9 + i * 18, b.y - T.r - 20, 7, true);
   }
@@ -1623,8 +2013,20 @@ function drawArrowWorld(a) {
   if (a.stuck && skyPath) ctx.clip(skyPath);
   if (!a.stuck) { const sp = Math.hypot(a.vx, a.vy) || 1; line(x, y, x - a.vx / sp * 60, y - a.vy / sp * 60, 3, 'rgba(220,215,200,.15)'); }
   ctx.translate(x, y); ctx.rotate(ang);
-  if (a.stuck && a.st > (a.bird ? 8 : 6)) ctx.globalAlpha = Math.max(0, (a.bird ? 9 : 7) - a.st);
+  const end = a.burn ? BURN_TIME + 2.5 : a.bird ? 9 : 7;
+  if (a.stuck && a.st > end - 1) ctx.globalAlpha = Math.max(0, end - a.st);
   arrowShape(-78, 78, STYLE[a.owner].fletch, 0.9);
+  if (a.burn) {
+    // charred black, and on fire until it burns out
+    const k = a.stuck ? Math.min(1, a.st / BURN_TIME) : 0;
+    line(-80, 0, -2, 0, 6, `rgba(20,10,4,${.55 + .4 * k})`);
+    if (!a.stuck || a.st < BURN_TIME) {
+      const fade = a.stuck ? 1 - Math.pow(a.st / BURN_TIME, 2) : 1, al = ctx.globalAlpha;
+      ctx.globalCompositeOperation = 'lighter';
+      for (let i = 0; i < 6; i++) { const fx = -72 + i * 13, fl = Math.sin(time * 22 + i * 1.7); glowAt(fx, -6 - 4 * fl, (22 + 7 * fl) * fade + 5, .8 * fade); }
+      ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = al;
+    }
+  }
   if (a.bird) {
     const T = BT[a.bird.t] || BT.raven;
     ctx.save(); ctx.translate(-22 - T.r * .35, 0); if (Math.cos(ang) < 0) ctx.scale(1, -1);
@@ -1684,6 +2086,7 @@ function drawArcher(p) {
   else if (p.hurt > 0) line(9, -146, 15, -146, 1.6, '#1a0f0a');
   else { ctx.fillStyle = '#140c08'; ctx.fillRect(11, -148, 3.5, 2.5); line(11, -137, 16, -137.5, 1.4, '#3a1c14'); }
   for (const w of p.lodged) { ctx.save(); ctx.translate(w.lx, w.ly); ctx.rotate(w.ang); arrowShape(-58, 50, STYLE[w.fl].fletch, .75, false); ctx.restore(); ctx.fillStyle = '#3a0303'; circ(w.lx, w.ly, 3); ctx.fill(); }
+  if (p.shield > 0) drawShield(p);
   if (p.fall < .3) {
     const dx = Math.cos(la), dy = Math.sin(la), hx = 6 + dx * 34, hy = -122 + dy * 34;
     const v = dragVec(p), drawK = v ? v.pow : p.shootT > 0 ? 0 : .25;
@@ -1700,6 +2103,29 @@ function drawArcher(p) {
     line(0, -122, 22, -150 + shake, 8, S.tabard2); circ(24, -153 + shake, 5); fill(skin, 'rgba(0,0,0,.4)', 1);
   }
   ctx.restore();
+}
+// A wooden heater shield in the hunter's colours, strapped across the chest (drawn in the hunter's own units).
+// Arrows it has stopped stay stuck in it; it glows briefly when it appears or takes a hit.
+function drawShield(p) {
+  const S = p.S, { x, y, w, h } = SHIELD, pop = p.shieldT > 0 ? 1 + p.shieldT * .25 : 1;
+  ctx.save(); ctx.translate(x, y); ctx.scale(pop, pop);
+  if (p.shieldT > 0) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = p.shieldT * .6; ctx.drawImage(glow, -w * 2.2, -h * 2, w * 4.4, h * 4); ctx.restore(); }
+  const outline = () => { ctx.beginPath(); ctx.moveTo(-w, -h); ctx.lineTo(w, -h); ctx.lineTo(w, h * .1); ctx.quadraticCurveTo(w * .9, h * .75, 0, h); ctx.quadraticCurveTo(-w * .9, h * .75, -w, h * .1); ctx.closePath(); };
+  outline(); fill('#cfd6dd', 'rgba(0,0,0,.7)', 3);                       // iron rim
+  ctx.save(); ctx.scale(.84, .86); outline();
+  const g = ctx.createLinearGradient(-w, 0, w, 0); g.addColorStop(0, S.tabard2); g.addColorStop(.5, S.tabard); g.addColorStop(1, S.tabard2);
+  fill(g); ctx.clip();
+  ctx.fillStyle = S.charge; ctx.fillRect(-w, -4, w * 2, 8); ctx.fillRect(-4, -h, 8, h * 2); // a cross on the field
+  ctx.fillStyle = 'rgba(255,255,255,.12)'; ctx.fillRect(-w, -h, w * .6, h * 2);
+  ctx.restore();
+  circ(0, 0, 5); fill('#8f969b', 'rgba(0,0,0,.6)', 1.5);                  // boss
+  ctx.restore();
+  // the arrows it has caught, quivering
+  for (const s of p.sArrows) {
+    ctx.save(); ctx.translate(s.lx, s.ly); ctx.rotate(s.ang + Math.sin(time * 30) * .03 * (p.shieldT > 0 ? 1 : 0));
+    arrowShape(-58, 52, STYLE[s.fl ? 1 : 0].fletch, .75, false); ctx.restore();
+    ctx.fillStyle = '#2a1a0c'; circ(s.lx, s.ly, 2.6); ctx.fill();
+  }
 }
 const GRAWLIX = ['#@%&!', '$!#@%', '@#!%*', '%&@#!'];
 function drawDaze(p) {
@@ -1784,6 +2210,7 @@ function drawHUD() {
     while (fs > 15 && ctx.measureText(NAMES[p.id].full).width > w - 110) { fs -= 1; ctx.font = `${fs}px ${SC}`; }
     text(NAMES[p.id].full, tx, 44, `${fs}px ${SC}`, '#e9dfca', al);
     let sub = `${downed[p.id]} ${downed[p.id] === 1 ? 'bird' : 'birds'}`;
+    if (p.shield > 0) sub += `, shield ${p.shield === 2 ? 'whole' : 'cracked'}`;
     if (p.daze > 0) sub = 'knocked flat';
     else if (cfg.mode === 'turn' && state === 'play' && turn === p.id) sub = 'to draw';
     if (role !== 'local' && localControl(p)) sub += ', you';
@@ -1821,8 +2248,11 @@ function draw() {
     for (const p of players) drawArcher(p);
     for (const a of arrows) if (!a.stuck && !a.dead) drawArrowWorld(a);
   }
+  drawFlames();
   drawLiveBirds();
   for (const q of parts) {
+    if (q.k === 'ember') { const k = 1 - q.t / q.life; ctx.save(); ctx.globalCompositeOperation = 'lighter'; glowAt(q.x, q.y, q.r * 3.2, k * .9); ctx.restore(); ctx.globalAlpha = 1; continue; }
+    if (q.k === 'fallarrow') { ctx.globalAlpha = Math.min(1, (q.life - q.t) * 2); ctx.save(); ctx.translate(q.x, q.y); ctx.rotate(q.rot); arrowShape(-40, 50, q.c, .7, false); ctx.restore(); ctx.globalAlpha = 1; continue; }
     if (q.k === 'feather') { ctx.globalAlpha = Math.min(1, (q.life - q.t) * 1.5); ctx.save(); ctx.translate(q.x, q.y); ctx.rotate(q.rot); ell(0, 0, q.r * 1.6, q.r * .45); ctx.fillStyle = q.c; ctx.fill(); line(-q.r * 1.8, 0, q.r * 1.6, 0, .8, 'rgba(40,40,44,.8)'); ctx.restore(); ctx.globalAlpha = 1; continue; }
     ctx.globalAlpha = q.k === 'blood' ? 1 : 1 - q.t / q.life;
     if (q.k === 'blood') { ctx.save(); ctx.translate(q.x, q.y); ctx.rotate(Math.atan2(q.vy, q.vx)); ell(0, 0, q.r * 1.6, q.r * .8); ctx.fillStyle = q.c; ctx.fill(); ctx.restore(); }
@@ -1867,7 +2297,7 @@ seg('#terrSeg', v => { cfg.terrain = v; previewLevel(); });
 seg('#setSeg', v => { cfg.setting = v; previewLevel(); });
 seg('#oppSeg', v => {
   cfg.opp = v; const on = v === 'online';
-  $('#name2Lbl').hidden = $('#name2Box').hidden = v !== 'local'; // a second name only for two on one screen
+  $('#name2Lbl').hidden = $('#name2Box').hidden = $('#acct2Lbl').hidden = $('#acct2').hidden = v !== 'local'; // a second name only for two on one screen
   $('#onlineBox').hidden = !on; $('#howTxt').hidden = on;
   $('#startBtn').textContent = on ? 'Open a challenge' : 'Take the field';
   $('#startBtn').disabled = on && !NET.lobby;
@@ -1895,7 +2325,7 @@ $('#startBtn').onclick = () => {
   ac();
   if (cfg.opp === 'online') { hostDuel(); return; }
   readNames();
-  whenSideways(() => { role = 'local'; wins[0] = wins[1] = 0; matchNo = 0; startMatch(); updateNetTag(); });
+  whenSideways(() => { role = 'local'; huntCareers(); wins[0] = wins[1] = 0; matchNo = 0; startMatch(); updateNetTag(); });
 };
 $('#turnBack').onclick = () => { pendingStart = null; toMenu(); };
 $('#joinBtn').onclick = () => { ac(); joinDuel($('#codeIn').value); };
@@ -1906,13 +2336,28 @@ $('#againBtn').onclick = () => {
 };
 function toMenu() {
   netLeave();
-  state = 'menu'; players = []; arrows = []; parts = []; decals = []; texts = []; birds = []; banner = null; redFlash = 0;
+  state = 'menu'; players = []; arrows = []; parts = []; decals = []; texts = []; birds = []; flames = []; banner = null; redFlash = 0;
   hidePanels(); $('#hudBtns').hidden = true; $('#menu').hidden = false; updateNetTag();
   seed = 11; buildLevel();
   $('#startBtn').disabled = cfg.opp === 'online' && !NET.lobby;
 }
 $('#toMenuBtn').onclick = toMenu; $('#menuBtn').onclick = toMenu; $('#waitCancel').onclick = toMenu;
 $('#waitInvite').onclick = inviteDuel;
+// profiles
+[0, 1].forEach(i => {
+  $(`#acct${i + 1}`).addEventListener('click', e => {
+    const b = e.target.closest('button[data-a]'); if (!b || b.disabled) return; sfx.tick();
+    const a = b.dataset.a;
+    if (a === 'in' || a === 'make') accountAction(i, a === 'make');
+    else if (a === 'out') signOutSlot(i);
+    else if (a === 'rec') { const u = signedIn(i); if (u) showRecords([[u.uid, mkName(nameEls(i)[0].value, nameEls(i)[1].value, 'Aldric').full]], 'menu'); }
+  });
+  $(`#pw${i + 1}`).addEventListener('keydown', e => { if (e.key === 'Enter') accountAction(i, false); });
+});
+$('#recordsBtn').onclick = () => showRecords(huntRecords(), 'over');
+$('#recBack').onclick = () => { hidePanels(); $(recordsBack === 'over' ? '#over' : '#menu').hidden = false; };
+// someone who signed in before is signed straight back in
+try { if (localStorage.getItem('archer-signed') === '1') { acctMsg(0, 'Opening the royal records…'); fbAuth(0).then(() => { acctMsg(0, signedIn(0) ? 'Your career is being kept.' : ''); return afterSignIn(0); }).catch(e => { console.warn(e); acctMsg(0, ''); }); } } catch (_) {}
 $('#muteBtn').onclick = () => { muted = !muted; $('#muteBtn').textContent = muted ? 'Sound off' : 'Sound on'; };
 
 window.addEventListener('resize', resize);

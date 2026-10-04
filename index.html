@@ -19,6 +19,8 @@
 <meta property="og:image" content="https://thespectrumtechengine.com/archer-duel/share.jpg">
 <meta property="og:url" content="https://thespectrumtechengine.com/archer-duel/">
 <meta property="og:type" content="website">
+<!-- Usage numbers and owner tools, shared by every Spectrum Tech Engine app -->
+<script src="https://thespectrumtechengine.com/ste-owner.js" data-app="archer-duel" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&display=swap" rel="stylesheet">
@@ -344,6 +346,14 @@ function seeded(s) { s = (Math.abs(s | 0) % 2147483646) + 1; return () => { s = 
   gx.putImageData(id, 0, 0); $('#grain').style.backgroundImage = `url(${g.toDataURL()})`;
 })();
 
+// Usage numbers for the owner (see ste-owner.js on the website); never gets in the way of the game
+const ste = (f, ...a) => { try { if (window.STE && window.STE[f]) window.STE[f](...a); } catch (_) {} };
+const PLACE = { flat: "meadow", hill: "mountain", ravine: "bridge", high: "beach", broken: "forest" };
+function countHunt(opp) {
+  ste("track", "play");
+  ste("detail", "vs-" + opp); ste("detail", "place-" + (PLACE[cfg.terrain] || cfg.terrain)); ste("detail", "setting-" + cfg.setting);
+  ste("detail", cfg.mode === "live" ? "open-combat" : "measured-turns"); ste("detail", "first-to-" + cfg.target);
+}
 /* ---------------- config / state ---------------- */
 const cfg = { mode: 'turn', n: 3, terrain: 'flat', setting: 'dusk', opp: 'local', target: 25 };
 let role = 'local';            // local | host | guest | spec
@@ -608,6 +618,7 @@ function startMatch() {
   state = 'play'; introT = 2.2; shake = 0; redFlash = 0;
   Object.assign(cpuS, { phase: 'idle', t: 0, wait: 1.4, dir: null, tx: W - 130 });
   emitFx({ k: 'drum' });
+  countHunt(role === 'host' ? 'online' : cfg.opp === 'cpu' ? 'computer' : 'same-screen');
   showBanner('The hunt begins', 1.2, () => showBanner('Level I: a lone raven', 1.3));
   hidePanels(); $('#hudBtns').hidden = false; updateNetTag();
 }
@@ -1043,6 +1054,7 @@ async function accountAction(i, make) {
     } else await authM.signInWithEmailAndPassword(auth, email, pw);
     $(`#pw${i + 1}`).value = '';
     await afterSignIn(i);
+    ste("detail", make ? "profile-made" : "signed-in");
     acctMsg(i, make ? 'Profile made. Every hunt you finish now counts towards your career.' : 'Welcome back. Your career is being kept.');
   } catch (e) { console.warn(e); acctMsg(i, authMessage(e)); }
   finally { acctBusy[i] = false; renderAcct(i); }
@@ -1127,6 +1139,7 @@ function huntRecords() {
 // "Send the code on WhatsApp": a link that opens the game and joins this duel
 const GAME_URL = 'https://thespectrumtechengine.com/archer-duel/';
 function inviteDuel() {
+  ste("track", "share");
   const text = `🏹 ${NAMES[0].full} challenges you to a bird hunt in Archer Duel: The King's Hunt! Tap to take the field (code ${NET.code}):\n${GAME_URL}?duel=${NET.code}`;
   if (navigator.share) { navigator.share({ text }).catch(() => {}); return; }
   const wa = 'https://wa.me/?text=' + encodeURIComponent(text);
@@ -1320,6 +1333,7 @@ function applySnap(s, prev) {
     cfg.n = clamp(num(s.n, 0) | 0, 0, 5); cfg.terrain = ['flat','hill','ravine','high','broken'].includes(s.tr) ? s.tr : 'flat';
     cfg.setting = ['dusk','winter','night'].includes(s.se) ? s.se : 'dusk'; seed = num(s.sd, 1) | 0;
     buildLevel(); players = [mkPlayer(0), mkPlayer(1)]; parts = []; decals = []; texts = []; birds = []; flames = [];
+    if (role === 'guest') countHunt('online');
   }
   cfg.target = clamp(num(s.tg, 25) | 0, 1, 999);
   if (Array.isArray(s.nm)) { NAMES[0] = nameFrom(s.nm[0], 'Aldric'); if (role !== 'guest') NAMES[1] = nameFrom(s.nm[1], 'Corvin'); }
@@ -1669,10 +1683,27 @@ function endScreen() {
   again.textContent = role === 'guest' ? 'Call for another hunt' : 'Another hunt';
   $('#overNote').textContent = role === 'host' || role === 'guest' ? 'Either of you may call the next hunt.' : role === 'spec' ? 'You are watching this hunt.' : '';
   hidePanels(); $('#over').hidden = false; $('#hudBtns').hidden = true;
-  $('#recordsBtn').hidden = !huntRecords().length;
-  recordCareer();
+  // the extras never stop the end screen from showing
+  try { $('#recordsBtn').hidden = !huntRecords().length; } catch (e) { console.error(e); $('#recordsBtn').hidden = true; }
+  try { recordCareer().catch(e => console.error(e)); } catch (e) { console.error(e); }
+  try { countEnd(); } catch (e) { console.error(e); }
   if (authority()) matchNo++;
   setTimeout(() => { if (!again.hidden) again.focus(); }, 50);
+}
+// what happened in the hunt that just ended, for this phone's hunter(s)
+let countedSeed = -1;
+function countEnd() {
+  if (countedSeed === seed || role === 'spec') return; countedSeed = seed;
+  const mine = role === 'guest' ? [1] : role === 'host' || cfg.opp === 'cpu' ? [0] : [0, 1];
+  ste("track", "hunts-finished");
+  for (const i of mine) {
+    ste("value", "points", scores[i]); ste("value", "birds", downed[i]);
+    if (feats[i].phx) ste("detail", "phoenix-shot", feats[i].phx);
+    if (feats[i].combo > 1) ste("detail", "two-or-more-birds-one-arrow");
+    if (feats[i].blk) ste("detail", "arrows-stopped-by-shield", feats[i].blk);
+  }
+  if (role === 'local' && cfg.opp === 'cpu') ste("detail", winner === 0 ? "beat-the-computer" : "lost-to-the-computer");
+  ste("value", "level-reached", level);
 }
 function hidePanels() { $('#menu').hidden = true; $('#over').hidden = true; $('#wait').hidden = true; $('#records').hidden = true; }
 
@@ -2280,7 +2311,14 @@ function draw() {
 }
 
 let last = performance.now();
-function loop(now) { const dt = Math.min(0.033, (now - last) / 1000); last = now; update(dt); draw(); requestAnimationFrame(loop); }
+// The next frame is always asked for first, so one bad frame can never freeze the game
+let loopErrors = 0;
+function loop(now) {
+  requestAnimationFrame(loop);
+  const dt = Math.min(0.033, (now - last) / 1000); last = now;
+  try { update(dt); draw(); }
+  catch (e) { if (loopErrors++ < 3) { console.error(e); ste("detail", "error-" + String(e && e.message || e).slice(0, 30)); } }
+}
 
 /* ---------------- UI wiring ---------------- */
 function seg(id, cb) {
